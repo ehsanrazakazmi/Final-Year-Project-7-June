@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
+use App\Support\Portals;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -15,60 +15,43 @@ class LoginController extends Controller
     | Login Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
+    | Authentication itself is handled by the AuthenticatesUsers trait, which
+    | brings login throttling, session regeneration, "remember me" and proper
+    | validation errors. Only the post-login destination is customised here.
     |
     */
 
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
+     * Fallback redirect; the real destination comes from authenticated().
      *
      * @var string
      */
     protected $redirectTo = RouteServiceProvider::HOME;
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
     }
 
-    protected function login(Request $request)
+    /**
+     * Send the user to the portal matching their role.
+     */
+    protected function authenticated(Request $request, $user)
     {
-        $credentials = $request->validate([
-            'email'=> 'required|email',
-            'password'=>'required'
-        ]);
+        $home = Portals::homeForUser($user);
 
-        if(Auth::attempt(($credentials))){
-            $user_role = Auth::user()->role; 
+        if ($home === '/login') {
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-            switch($user_role){
-                case 1:
-                    return redirect('/pages/home');
-                    break;
-                
-                case 2:
-                    return redirect('/adminpanel');
-                    break;
-                case 3:
-                    return redirect('/technicianpanel');
-                    break;
-                default:
-                    Auth::logout(); 
-                    return redirect('/login')->with('error', 'oye kuj ghalat ho giya');
-                     
-            }
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account has no portal assigned. Please contact an administrator.',
+            ]);
         }
-        else{
-            return redirect('/login');
-        }
+
+        return redirect()->to($home);
     }
 }

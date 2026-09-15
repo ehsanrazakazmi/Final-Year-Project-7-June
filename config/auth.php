@@ -93,6 +93,19 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        /*
+         * Used for admin-created accounts. The invited user has to receive the
+         * mail, open it and choose a password, so the 60 minute window used for
+         * self-service resets is far too short. Throttling is disabled so an
+         * admin can re-send an invitation immediately.
+         */
+        'invitations' => [
+            'provider' => 'users',
+            'table' => 'password_resets',
+            'expire' => 10080,
+            'throttle' => 0,
+        ],
     ],
 
     /*

@@ -22,7 +22,8 @@ class OrderController extends Controller
     public function updateStatus($id, Request $request)
     {
         Order::findOrFail($id)->update(['status' => $request->status]);
-        return back()->with('success', 'Products Updated!');
+        // return back()->with('success', 'Products Updated!');
+        return redirect('/orders/')->with('success', 'Products Updated!');
 
     }
 

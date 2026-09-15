@@ -32,7 +32,7 @@ class TestMail extends Mailable
      */
     public function build()
     {
-        // return $this->subject($this->details['subject'])->view('mail/mail');
-        return $this->view('emails.welcome');
+        return $this->subject('Welcome to '.config('app.name'))
+            ->view('emails.welcome');
     }
 }

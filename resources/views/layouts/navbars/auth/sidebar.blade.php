@@ -64,6 +64,18 @@
         <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Technician Handling</h6>
       </li>
       <li class="nav-item pb-2">
+        <a class="nav-link {{ (Request::is('users') || Request::is('users/*') ? 'active' : '') }}" href="{{ route('adminpanel.users.index') }}">
+            <script src="https://cdn.lordicon.com/bhenfmcm.js"></script>
+            <lord-icon
+                src="https://cdn.lordicon.com/dxjqoygy.json"
+                trigger="hover"
+                colors="primary:#121331,secondary:#08a88a"
+                style="width:40px;height:40px">
+            </lord-icon>
+            <span class="nav-link-text ms-1">Users</span>
+        </a>
+      </li>
+      <li class="nav-item pb-2">
         <a class="nav-link {{ (Request::is('user-management') ? 'active' : '') }}" href="{{ route('adminpanel.technicians') }}">
             {{-- <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i style="font-size: 1rem;" class="fas fa-lg fa-list-ul ps-2 pe-2 text-center text-dark {{ (Request::is('user-management') ? 'text-white' : 'text-dark') }} " aria-hidden="true"></i>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
+use App\Support\Portals;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\Auth;
 class RedirectIfAuthenticated
 {
     /**
-     * Handle an incoming request.
+     * Send an already-authenticated visitor to their own portal rather than to
+     * the generic /home page, which belongs to none of the three portals.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @param  string|null  ...$guards
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next, ...$guards)
     {
@@ -23,7 +21,7 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                return redirect()->to(Portals::homeForUser(Auth::guard($guard)->user()));
             }
         }
 

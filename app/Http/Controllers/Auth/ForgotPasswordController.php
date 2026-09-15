@@ -30,7 +30,8 @@ class ForgotPasswordController extends Controller
         );
 
         if ($response === Password::RESET_LINK_SENT) {
-            return back()->with('status', trans($response));
+            // The view renders session('success'), not session('status').
+            return back()->with('success', trans($response));
         }
 
         return back()->withErrors(

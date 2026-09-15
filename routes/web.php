@@ -20,7 +20,9 @@ use App\Http\Controllers\InfoUserController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\AdminTechController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\PublicmailController;
 use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\TechProfileController;
@@ -105,9 +107,24 @@ Route::group(['middleware' => 'admin'], function () {
     });
 
 
+    // User management - admins create accounts, invitees set their own password.
+    Route::group(['prefix' => 'users'], function () {
+        Route::get('/', [AdminUserController::class, 'index'])->name('adminpanel.users.index');
+        Route::get('/create', [AdminUserController::class, 'create'])->name('adminpanel.users.create');
+        Route::post('/', [AdminUserController::class, 'store'])->name('adminpanel.users.store');
+        Route::get('/{user}/edit', [AdminUserController::class, 'edit'])->name('adminpanel.users.edit');
+        Route::put('/{user}', [AdminUserController::class, 'update'])->name('adminpanel.users.update');
+        Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('adminpanel.users.destroy');
+        Route::post('/{user}/resend-invitation', [AdminUserController::class, 'resendInvitation'])->name('adminpanel.users.resend');
+    });
+
     Route::get('mail/contact', [mailController::class, "mailform"])->name('mail.create');
     Route::post('mail/sendemail', [mailController::class, "sendmail"])->name('sendmail');
 });
+
+// Invitation flow - reachable while logged out.
+Route::get('/set-password/{token}', [SetPasswordController::class, 'show'])->name('password.set');
+Route::post('/set-password', [SetPasswordController::class, 'store'])->name('password.set.store');
 Route::get('/login/forgot-password', [ResetController::class, 'create']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendEmail']);
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'resetPass'])->name('password.reset');
