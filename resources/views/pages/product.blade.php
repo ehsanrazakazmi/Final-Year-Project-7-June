@@ -29,11 +29,11 @@
                         @csrf
                         <div class="p-form">
                             <div class="p-colors">
-                                <label for="color">Availability</label>
-                                <select name="color" id="color" required>
+                                <label for="availability">Availability</label>
+                                <select name="availability" id="availability" required>
                                     <option value="">-- Select Timing --</option>
-                                    @foreach ($product->colors as $color)
-                                        <option value="{{$color->id}}">{{$color->name}}</option>
+                                    @foreach ($product->availabilities as $availability)
+                                        <option value="{{$availability->id}}">{{$availability->name}}</option>
                                     @endforeach
                                 </select>
                             </div>

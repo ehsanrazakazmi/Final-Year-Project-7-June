@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('content'); ?>
 
 <div>
@@ -145,14 +143,14 @@ unset($__errorArgs, $__bag); ?>
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="colors">Availability (Timing)</label> <br>
-                                <?php $__currentLoopData = $colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <label for="availabilities">Availability (Timing)</label> <br>
+                                <?php $__currentLoopData = $availabilities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $availability): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                      <div class="form-check form-check-inline">
-                                        <input type="checkbox" name="colors[]" class="form-check-input" value="<?php echo e($color->id); ?>" <?php echo e(in_array($color->id, $asdf->colors->pluck('id')->toArray())?'checked' : ''); ?> >
-                                        <label for="<?php echo e($color->name); ?>"class="form-check-label" ><?php echo e($color->name); ?></label>
+                                        <input type="checkbox" name="availabilities[]" class="form-check-input" value="<?php echo e($availability->id); ?>" <?php echo e(in_array($availability->id, $asdf->availabilities->pluck('id')->toArray())?'checked' : ''); ?> >
+                                        <label for="<?php echo e($availability->name); ?>"class="form-check-label" ><?php echo e($availability->name); ?></label>
                                   </div>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                <?php $__errorArgs = ['colors'];
+                                <?php $__errorArgs = ['availabilities'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }

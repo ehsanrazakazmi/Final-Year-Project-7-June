@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('content'); ?>
 
 <div >
@@ -73,8 +71,8 @@
                                         <p class="text-xs font-weight-bold mb-0"><?php echo e($product->category->name); ?></p>
                                     </td>
                                     <td>
-                                        <?php $__currentLoopData = $product->colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                          <div ><?php echo e($color->code); ?> to <?php echo e($color->code1); ?> </div>
+                                        <?php $__currentLoopData = $product->availabilities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $availability): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                          <div ><?php echo e($availability->available_from); ?> to <?php echo e($availability->available_to); ?> </div>
                                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     </td>
                                     

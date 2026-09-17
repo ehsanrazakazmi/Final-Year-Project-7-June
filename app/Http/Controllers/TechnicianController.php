@@ -36,7 +36,7 @@ class TechnicianController extends Controller
     public function view($id)
     {
         $states = ['accepted'];
-        $order = Order::with('user', 'items', 'items.services', 'items.color')->findOrFail($id);
+        $order = Order::with('user', 'items', 'items.services', 'items.availability')->findOrFail($id);
         return view('technician.pages.view', ['order' => $order, 'states' => $states]);
     }
     public function store(Request $request)

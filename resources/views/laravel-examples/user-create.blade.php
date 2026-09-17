@@ -88,14 +88,14 @@
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="colors">Timinig</label>
-                                @foreach ($colors as $color)
+                                <label for="availabilities">Timinig</label>
+                                @foreach ($availabilities as $availability)
                                      <div class="form-check form-check-inline">
-                                        <input type="checkbox" name="colors[]" class="form-check-input" value="{{$color->id}}">
-                                        <label for="{{$color->name}}"class="form-check-label" >{{$color->name}}</label>
+                                        <input type="checkbox" name="availabilities[]" class="form-check-input" value="{{$availability->id}}">
+                                        <label for="{{$availability->name}}"class="form-check-label" >{{$availability->name}}</label>
                                   </div>
                                 @endforeach
-                                @error('colors')
+                                @error('availabilities')
                                     <span class="invalid-feedback">
                                         <strong>{{$message}}</strong>
                                     </span>                                   

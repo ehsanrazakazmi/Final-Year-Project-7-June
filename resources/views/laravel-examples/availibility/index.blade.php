@@ -28,8 +28,8 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="code">Available From</label>
-                            <input type="time" name="code" id="code" class="form-control @error('code') is-invalid @enderror" value="{{old('code')}}">
-                            @error('code')
+                            <input type="time" name="available_from" id="available_from" class="form-control @error('available_from') is-invalid @enderror" value="{{old('available_from')}}">
+                            @error('available_from')
                             <span class="invalid-feedback">
                                 <strong>{{$message}}</strong>
                             </span>
@@ -37,8 +37,8 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="code1">Available To</label>
-                            <input type="time" name="code1" id="code1" class="form-control @error('code1') is-invalid @enderror" value="{{old('code1')}}">
-                            @error('code1')
+                            <input type="time" name="available_to" id="available_to" class="form-control @error('available_to') is-invalid @enderror" value="{{old('available_to')}}">
+                            @error('available_to')
                             <span class="invalid-feedback">
                                 <strong>{{$message}}</strong>
                             </span>
@@ -72,23 +72,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($colors as $color)
+                            @foreach ($availabilities as $availability)
                                 
                            
                             <tr>
-                                <td>{{$color->id}}</td>
-                                <td>{{$color->name}}</td>
+                                <td>{{$availability->id}}</td>
+                                <td>{{$availability->name}}</td>
                                 <td>
                                     <div style="display: flex; align-items:center; gap:10px">
-                                    {{$color->code}} <span style="display: inline-block; width:30px; border-radius:50%; height:30px; background: {{$color->code}};"></span>
+                                    {{$availability->available_from}} <span style="display: inline-block; width:30px; border-radius:50%; height:30px; background: {{$availability->available_from}};"></span>
                                 </div>
                                 </td>
 
-                                <td>{{$color->code1}}</td>
+                                <td>{{$availability->available_to}}</td>
                                 
-                                <td>{{\Carbon\Carbon::parse($color->created_at)->format('d/m/Y')}}</td>
+                                <td>{{\Carbon\Carbon::parse($availability->created_at)->format('d/m/Y')}}</td>
                                 <td>
-                                    <form action="{{route('adminpanel.availability.destroy', $color->id)}}" method="post">
+                                    <form action="{{route('adminpanel.availability.destroy', $availability->id)}}" method="post">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">Delete</button>

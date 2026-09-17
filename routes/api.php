@@ -69,7 +69,7 @@ Route::get(
  * 'wishlists' is required by the React Native app (src/screens/...).
  */
 Route::get('/tables/{table}', function ($table) {
-    $allowed = ['wishlists', 'categories', 'colors', 'services'];
+    $allowed = ['wishlists', 'categories', 'availabilities', 'services'];
 
     if (! in_array($table, $allowed, true)) {
         abort(404);
@@ -103,9 +103,20 @@ Route::get('/order_status/{userId}', function ($userId) {
                 ->where('id', $item->service_id)
                 ->first();
 
-            $color = DB::table('colors')
-                ->where('id', $item->color_id)
+            $availability = DB::table('availabilities')
+                ->where('id', $item->availability_id)
                 ->first();
+
+            // COMPATIBILITY: the React Native app reads item.color.code /
+            // .code1 / .name (Order_status.js). The table and columns were
+            // renamed to availabilities/available_from/available_to, so the
+            // old shape is rebuilt here. Remove once the app is updated.
+            $color = $availability === null ? null : (object) [
+                'id' => $availability->id,
+                'name' => $availability->name,
+                'code' => $availability->available_from,
+                'code1' => $availability->available_to,
+            ];
 
             $data[] = [
                 'order_id' => $order->id,
@@ -172,6 +183,7 @@ Route::post('/cart_add', function (Request $request) {
         'address' => 'required',
         'quantity' => 'required',
         'service_id' => 'required',
+        // COMPATIBILITY: the app posts 'colors_id' (Wishlist.js). Kept as-is.
         'colors_id' => 'required',
     ]);
 
@@ -196,7 +208,7 @@ Route::post('/cart_add', function (Request $request) {
     ]);
 
     // Prepare the SQL statement to insert the order item data
-    $sql = "INSERT INTO items (order_id, service_id, color_id, quantity, created_at, updated_at)
+    $sql = "INSERT INTO items (order_id, service_id, availability_id, quantity, created_at, updated_at)
             VALUES (?, ?, ?, ?, now(), now())";
     $params = [
         $orderId,

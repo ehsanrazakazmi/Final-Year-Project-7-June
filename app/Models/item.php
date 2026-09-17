@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Color;
+use App\Models\Availability;
 use App\Models\Order;
 use App\Models\Services;
 use Illuminate\Database\Eloquent\Model;
@@ -23,8 +23,8 @@ class Item extends Model
     {
         return $this->belongsTo(Order::class);
     }
-    public function color()
+    public function availability()
     {
-        return $this->belongsTo(Color::class);
+        return $this->belongsTo(Availability::class);
     }
 }

@@ -89,14 +89,14 @@
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="colors">Availability (Timing)</label> <br>
-                                @foreach ($colors as $color)
+                                <label for="availabilities">Availability (Timing)</label> <br>
+                                @foreach ($availabilities as $availability)
                                      <div class="form-check form-check-inline">
-                                        <input type="checkbox" name="colors[]" class="form-check-input" value="{{$color->id}}" {{in_array($color->id, $asdf->colors->pluck('id')->toArray())?'checked' : ''}} >
-                                        <label for="{{$color->name}}"class="form-check-label" >{{$color->name}}</label>
+                                        <input type="checkbox" name="availabilities[]" class="form-check-input" value="{{$availability->id}}" {{in_array($availability->id, $asdf->availabilities->pluck('id')->toArray())?'checked' : ''}} >
+                                        <label for="{{$availability->name}}"class="form-check-label" >{{$availability->name}}</label>
                                   </div>
                                 @endforeach
-                                @error('colors')
+                                @error('availabilities')
                                     <span class="invalid-feedback">
                                         <strong>{{$message}}</strong>
                                     </span>                                   

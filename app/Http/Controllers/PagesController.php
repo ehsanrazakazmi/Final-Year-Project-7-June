@@ -10,7 +10,7 @@ class PagesController extends Controller
 {
     public function home()
     {
-        $pproducts = Services::with('category','colors')->orderBy('created_at', 'desc')->get();
+        $pproducts = Services::with('category','availabilities')->orderBy('created_at', 'desc')->get();
         return view('pages.home', ['products'=> $pproducts]);
     }
     // public function public()
@@ -46,7 +46,7 @@ class PagesController extends Controller
     
     public function product($id)
     {
-        $product =Services::with('category', 'colors')->findOrFail($id);
+        $product =Services::with('category', 'availabilities')->findOrFail($id);
         return view('pages.product', ['product' => $product]);
     }
 }

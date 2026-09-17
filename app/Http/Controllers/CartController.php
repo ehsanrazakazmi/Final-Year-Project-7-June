@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Color;
+use App\Models\Availability;
 use App\Models\Services;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,13 +14,13 @@ class CartController extends Controller
     {
 
         $product = Services::findOrFail($id);
-        $color = Color::findOrFail($request->color);
+        $availability = Availability::findOrFail($request->availability);
 
         Log::error('Error saving data to the database' . $product->category_id);
         $item = [
             'product' => $product,
             'quantity' => $request->quantity,
-            'color' => $color,
+            'availability' => $availability,
             'category_id' => $product->category_id,
         ];
 
@@ -44,7 +44,7 @@ class CartController extends Controller
     public function checkItemInCart($item)
     {
         foreach (session()->get('cart') as $key => $val) {
-            if ($val['product']['id'] == $item['product']['id'] && $val['color']['id'] == $item['color']['id']) {
+            if ($val['product']['id'] == $item['product']['id'] && $val['availability']['id'] == $item['availability']['id']) {
                 return $key;
             }
         }

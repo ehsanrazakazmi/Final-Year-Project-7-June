@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('color_id');
+            $table->unsignedBigInteger('availability_id');
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('quantity');
             $table->timestamps();

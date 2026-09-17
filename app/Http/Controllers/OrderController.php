@@ -16,7 +16,7 @@ class OrderController extends Controller
     public function view($id)
     {
         $states = ['pending', 'processing', 'shipped', 'cancelled'];
-        $order = Order::with('user', 'items', 'items.services', 'items.color')-> findOrFail($id);
+        $order = Order::with('user', 'items', 'items.services', 'items.availability')-> findOrFail($id);
         return view('laravel-examples/orders/view', ['order' => $order, 'states' => $states]);
     }
     public function updateStatus($id, Request $request)

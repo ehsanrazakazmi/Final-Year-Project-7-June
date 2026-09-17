@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\mailController;
-use App\Http\Controllers\ColorController;
+use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PagesController;
@@ -86,9 +86,9 @@ Route::group(['middleware' => 'admin'], function () {
     });
 
     Route::group(['prefix' => 'availability'], function () {
-        Route::get('/', [ColorController::class, 'index'])->name('adminpanel.availability');
-        Route::post('/', [ColorController::class, 'store'])->name('adminpanel.availability.store');
-        Route::delete('/{id}', [ColorController::class, 'destroy'])->name('adminpanel.availability.destroy');
+        Route::get('/', [AvailabilityController::class, 'index'])->name('adminpanel.availability');
+        Route::post('/', [AvailabilityController::class, 'store'])->name('adminpanel.availability.store');
+        Route::delete('/{id}', [AvailabilityController::class, 'destroy'])->name('adminpanel.availability.destroy');
     });
 
     Route::group(['prefix' => 'technicians'], function () {

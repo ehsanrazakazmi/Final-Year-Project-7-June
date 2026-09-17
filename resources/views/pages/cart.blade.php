@@ -33,7 +33,7 @@
                                         <p>{{ $item['product']['title']}}</p>
                                     </a>
                                 </td>
-                                <td>{{ $item['color']['name']}}</td>
+                                <td>{{ $item['availability']['name']}}</td>
                                 <td>${{ $item['product']['price'] / 100}}</td>
                                 <td>{{ $item['quantity']}}</td>
                                 <td>${{ $item['category_id']}}</td>

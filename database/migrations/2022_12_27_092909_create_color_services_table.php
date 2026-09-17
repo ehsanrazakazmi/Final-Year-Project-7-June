@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('color_services', function (Blueprint $table) {
+        Schema::create('availability_services', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('color_id');
+            $table->unsignedInteger('availability_id');
             $table->unsignedInteger('services_id');
             $table->timestamps();
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('color_product');
+        Schema::dropIfExists('availability_services');
     }
 };

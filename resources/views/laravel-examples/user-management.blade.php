@@ -73,8 +73,8 @@
                                         <p class="text-xs font-weight-bold mb-0">{{$product->category->name}}</p>
                                     </td>
                                     <td>
-                                        @foreach ($product->colors as $color)
-                                          <div >{{$color->code}} to {{$color->code1}} </div>
+                                        @foreach ($product->availabilities as $availability)
+                                          <div >{{$availability->available_from}} to {{$availability->available_to}} </div>
                                         @endforeach
                                     </td>
                                     

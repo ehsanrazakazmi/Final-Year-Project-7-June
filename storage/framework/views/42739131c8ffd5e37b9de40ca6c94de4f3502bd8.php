@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('content'); ?>
 
 <div>
@@ -42,15 +40,15 @@ unset($__errorArgs, $__bag); ?>
                         </div>
                         <div class="form-group mb-3">
                             <label for="code">Available From</label>
-                            <input type="time" name="code" id="code" class="form-control <?php $__errorArgs = ['code'];
+                            <input type="time" name="available_from" id="available_from" class="form-control <?php $__errorArgs = ['available_from'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('code')); ?>">
-                            <?php $__errorArgs = ['code'];
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('available_from')); ?>">
+                            <?php $__errorArgs = ['available_from'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -65,15 +63,15 @@ unset($__errorArgs, $__bag); ?>
                         </div>
                         <div class="form-group mb-3">
                             <label for="code1">Available To</label>
-                            <input type="time" name="code1" id="code1" class="form-control <?php $__errorArgs = ['code1'];
+                            <input type="time" name="available_to" id="available_to" class="form-control <?php $__errorArgs = ['available_to'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('code1')); ?>">
-                            <?php $__errorArgs = ['code1'];
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('available_to')); ?>">
+                            <?php $__errorArgs = ['available_to'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -114,23 +112,23 @@ unset($__errorArgs, $__bag); ?>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php $__currentLoopData = $colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php $__currentLoopData = $availabilities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $availability): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 
                            
                             <tr>
-                                <td><?php echo e($color->id); ?></td>
-                                <td><?php echo e($color->name); ?></td>
+                                <td><?php echo e($availability->id); ?></td>
+                                <td><?php echo e($availability->name); ?></td>
                                 <td>
                                     <div style="display: flex; align-items:center; gap:10px">
-                                    <?php echo e($color->code); ?> <span style="display: inline-block; width:30px; border-radius:50%; height:30px; background: <?php echo e($color->code); ?>;"></span>
+                                    <?php echo e($availability->available_from); ?> <span style="display: inline-block; width:30px; border-radius:50%; height:30px; background: <?php echo e($availability->available_from); ?>;"></span>
                                 </div>
                                 </td>
 
-                                <td><?php echo e($color->code1); ?></td>
+                                <td><?php echo e($availability->available_to); ?></td>
                                 
-                                <td><?php echo e(\Carbon\Carbon::parse($color->created_at)->format('d/m/Y')); ?></td>
+                                <td><?php echo e(\Carbon\Carbon::parse($availability->created_at)->format('d/m/Y')); ?></td>
                                 <td>
-                                    <form action="<?php echo e(route('adminpanel.availability.destroy', $color->id)); ?>" method="post">
+                                    <form action="<?php echo e(route('adminpanel.availability.destroy', $availability->id)); ?>" method="post">
                                     <?php echo csrf_field(); ?>
                                     <?php echo method_field('DELETE'); ?>
                                     <button type="submit" class="btn btn-danger">Delete</button>

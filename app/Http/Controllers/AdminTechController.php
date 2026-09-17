@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Color;
+use App\Models\Availability;
 use App\Models\Services;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ class AdminTechController extends Controller
 
     public function index()
     {
-        $pproducts = Services::with('category','colors')->orderBy('created_at', 'desc')->get();
+        $pproducts = Services::with('category','availabilities')->orderBy('created_at', 'desc')->get();
         // return view('admin.pages.products.index', ['prroducts'=> $pproducts]);
         return view('laravel-examples/user-management', ['prroducts'=> $pproducts]);
     }
@@ -24,8 +24,8 @@ class AdminTechController extends Controller
     public function create()
     {
         $categories = Category::all();
-        $colors = Color::all();
-        return view('laravel-examples/user-create',['categories' => $categories, 'colors' => $colors]);
+        $availabilities = Availability::all();
+        return view('laravel-examples/user-create',['categories' => $categories, 'availabilities' => $availabilities]);
     }
 
 
@@ -35,7 +35,7 @@ class AdminTechController extends Controller
         $request->validate([
             'title' => 'required|max:255',
             'category_id' => 'required',
-            'colors' => 'required',
+            'availabilities' => 'required',
             'price' => 'required',
             // 'rating' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -57,7 +57,7 @@ class AdminTechController extends Controller
             'image' => $image_name
         ]);
 
-        $product->colors()->attach($request->colors);
+        $product->availabilities()->attach($request->availabilities);
 
 
 
@@ -74,8 +74,8 @@ class AdminTechController extends Controller
     {
         $product = Services::findOrFail($id);
         $categories = Category::all();
-        $colors = Color::all();
-        return view('laravel-examples/user-edit',['categories' => $categories, 'colors' => $colors, 'asdf' => $product]);
+        $availabilities = Availability::all();
+        return view('laravel-examples/user-edit',['categories' => $categories, 'availabilities' => $availabilities, 'asdf' => $product]);
     
     }
 
@@ -86,7 +86,7 @@ class AdminTechController extends Controller
        $request->validate([
         'title' => 'required|max:255',
         'category_id' => 'required',
-        'colors' => 'required',
+        'availabilities' => 'required',
         'price' => 'required',
         // 'rating' => 'required',
         'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
@@ -107,7 +107,7 @@ class AdminTechController extends Controller
         'description' => $request->description,
         'image' => $image_name
     ]);
-    $product->colors()->sync($request->colors);
+    $product->availabilities()->sync($request->availabilities);
     //return response
     return back()->with('success', 'Products Updated!');
     }

@@ -21,7 +21,7 @@ class CheckoutController extends Controller
         foreach (session()->get('cart') as $item) {
             $order->items()->create([
                 'service_id' => $item['product']['id'],
-                'color_id' => $item['color']['id'],
+                'availability_id' => $item['availability']['id'],
                 'category_id' => $item['category_id'],
                 'quantity' => $item['quantity'],
 

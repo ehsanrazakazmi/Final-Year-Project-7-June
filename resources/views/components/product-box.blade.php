@@ -21,9 +21,9 @@
            {{$product->category->name}}
         </div>
      <div class="color-plateletes">
-        @foreach ($product->colors as $color)    
+        @foreach ($product->availabilities as $availability)    
         <div >
-                {{$color->code}} to {{$color->code1}} 
+                {{$availability->available_from}} to {{$availability->available_to}} 
         </div>
         <div style="clear: both">
 
