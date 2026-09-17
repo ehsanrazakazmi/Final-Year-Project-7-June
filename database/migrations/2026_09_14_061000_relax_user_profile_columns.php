@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * `category_id`, `latitude` and `longitude` were NOT NULL with no default, so
@@ -9,25 +10,42 @@ use Illuminate\Support\Facades\DB;
  * 'strict' => false and MySQL silently coerced them to 0. Admin-created users
  * supply none of these, so make them genuinely optional.
  *
+ * Each column is checked first: on an existing database they are present, but
+ * on a freshly migrated one they are not, because the migrations that
+ * originally added them are no longer in the repository. Guarding keeps
+ * `migrate:fresh` working in both cases.
+ *
  * Raw SQL is used because ->change() would require doctrine/dbal.
  */
 return new class extends Migration
 {
+    /**
+     * @var array<string, string>
+     */
+    private array $columns = [
+        'category_id' => 'INT',
+        'latitude' => 'DOUBLE',
+        'longitude' => 'DOUBLE',
+    ];
+
     public function up(): void
     {
-        DB::statement('ALTER TABLE `users` MODIFY `category_id` INT NULL DEFAULT NULL');
-        DB::statement('ALTER TABLE `users` MODIFY `latitude` DOUBLE NULL DEFAULT NULL');
-        DB::statement('ALTER TABLE `users` MODIFY `longitude` DOUBLE NULL DEFAULT NULL');
+        foreach ($this->columns as $column => $type) {
+            if (Schema::hasColumn('users', $column)) {
+                DB::statement("ALTER TABLE `users` MODIFY `{$column}` {$type} NULL DEFAULT NULL");
+            }
+        }
     }
 
     public function down(): void
     {
-        DB::statement('UPDATE `users` SET `category_id` = 0 WHERE `category_id` IS NULL');
-        DB::statement('UPDATE `users` SET `latitude` = 0 WHERE `latitude` IS NULL');
-        DB::statement('UPDATE `users` SET `longitude` = 0 WHERE `longitude` IS NULL');
+        foreach ($this->columns as $column => $type) {
+            if (! Schema::hasColumn('users', $column)) {
+                continue;
+            }
 
-        DB::statement('ALTER TABLE `users` MODIFY `category_id` INT NOT NULL');
-        DB::statement('ALTER TABLE `users` MODIFY `latitude` DOUBLE NOT NULL');
-        DB::statement('ALTER TABLE `users` MODIFY `longitude` DOUBLE NOT NULL');
+            DB::statement("UPDATE `users` SET `{$column}` = 0 WHERE `{$column}` IS NULL");
+            DB::statement("ALTER TABLE `users` MODIFY `{$column}` {$type} NOT NULL");
+        }
     }
 };

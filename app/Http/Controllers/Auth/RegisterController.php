@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Mail;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
@@ -23,9 +22,10 @@ class RegisterController extends Controller
     | Register Controller
     |--------------------------------------------------------------------------
     |
-    | Public self-registration. NOTE: the role is still taken from the request,
-    | so a visitor can choose which portal they land in. That is a known open
-    | issue - account creation is meant to move behind AdminUserController.
+    | Public self-registration. Always creates a RESIDENT - the role is never
+    | read from the request, so a visitor cannot choose which portal they land
+    | in. Admin and technician accounts are created by an admin through
+    | AdminUserController, which emails an invitation.
     |
     */
 
@@ -47,7 +47,6 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(array_keys(User::ROLE_MAP))],
         ]);
     }
 
@@ -56,18 +55,18 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => (int) $data['role'],
-        ]);
+        // The role is NOT taken from the request. Public signup always creates
+        // a resident; admin and technician accounts are created by an admin
+        // through AdminUserController. Assigning it explicitly (rather than by
+        // mass assignment) keeps working now that `role` is not fillable.
+        $user = new User();
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->password = Hash::make($data['password']);
+        $user->role = User::ROLE_RESIDENT;
+        $user->save();
 
-        $roleName = User::roleNameFor((int) $data['role']);
-
-        if ($roleName !== null) {
-            $user->assignRoleByName($roleName);
-        }
+        $user->assignRoleByName('resident');
 
         // A dead mail transport must not destroy an account that already exists.
         try {

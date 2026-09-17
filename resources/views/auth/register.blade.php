@@ -172,12 +172,11 @@
                     <input id="password-confirm" type="password" class="form-control" placeholder="Confirm-Password" name="password_confirmation" required autocomplete="new-password">
                 </div>
 
-                <div class="mb-3">
-                  <input type="text" class="form-control" placeholder="role" name="role" id="role" aria-label="role" aria-describedby="role" value="{{ old('role') }}">
-                  @error('role')
-                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                  @enderror
-                </div>
+                {{--
+                  The role field was removed: it let a visitor type their own
+                  role and register as an admin. Public signup now always
+                  creates a resident (see Auth\RegisterController::create).
+                --}}
                 {{-- <div class="form-check form-check-info text-left">
                   <input class="form-check-input" type="checkbox" name="agreement" id="flexCheckDefault" checked>
                   <label class="form-check-label" for="flexCheckDefault">

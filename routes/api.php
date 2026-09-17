@@ -57,8 +57,26 @@ Route::get(
     [PagesController::class, 'home_data']
 );
 
+/**
+ * Read-only access to a small set of catalogue tables.
+ *
+ * This previously ran DB::table($table) on whatever name the caller supplied,
+ * so /api/tables/users returned every password hash, email, otp and
+ * remember_token to anyone, unauthenticated. The allowlist is deliberate:
+ * anything not named here is refused, so a table added later stays private
+ * by default rather than being exposed by accident.
+ *
+ * 'wishlists' is required by the React Native app (src/screens/...).
+ */
 Route::get('/tables/{table}', function ($table) {
+    $allowed = ['wishlists', 'categories', 'colors', 'services'];
+
+    if (! in_array($table, $allowed, true)) {
+        abort(404);
+    }
+
     $data = DB::table($table)->get();
+
     return response()->json(['data' => $data]);
 });
 

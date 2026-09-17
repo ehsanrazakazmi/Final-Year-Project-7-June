@@ -11,8 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Order matters: the roles must exist before a user can be given one.
         $this->call([
             RoleSeeder::class,
+            AdminUserSeeder::class,
+            CategorySeeder::class,
         ]);
     }
 }

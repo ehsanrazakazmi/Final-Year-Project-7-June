@@ -4,3 +4,4 @@
 .env
 .env.backup
 .env.production
+/storage/logs/laravel.log

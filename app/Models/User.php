@@ -39,12 +39,16 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The attributes that are mass assignable.
      *
+     * `role` is deliberately absent. Leaving it mass-assignable meant any
+     * User::create($request->all()) - there is still one in the unrouted
+     * App\Http\Controllers\RegisterController - could let a request set its own
+     * role. Assign it explicitly, or via assignRoleByName().
+     *
      * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
-        'role',
         'password',
     ];
 
