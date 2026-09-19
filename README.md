@@ -116,8 +116,10 @@ Coverage focuses on the parts that are easy to break silently:
 |---|---|
 | `Auth/PortalRedirectTest` | each role lands on its own portal, is bounced out of the others, and an unrecognised role is signed out rather than looping |
 | `Auth/RegistrationTest` | a forged `role` in the signup request cannot create an administrator |
+| `Auth/AccessControlTest` | `/chat` and `/messages` reject guests and leak no user data; unverified users cannot reach any portal |
 | `Api/TableAllowlistTest` | `/api/tables/{table}` serves catalogue tables only; no password hash is reachable |
 | `AvailabilityRelationTest` | the service ↔ availability pivot stores its two foreign keys the right way round |
+| `OrderItemSchemaTest` | `items` carries the columns checkout and the technician dashboard actually write and query |
 
 That last one exists because `belongsToMany()` with its key arguments reversed
 writes swapped ids without raising an error — the kind of bug only a round-trip
@@ -146,18 +148,14 @@ host itself. To run it against a device or emulator, serve with
 
 Kept visible rather than hidden:
 
-- **The `items` table is inconsistent.** The migration defines
-  `product_id / availability_id / order_id / quantity`, while
-  `CheckoutController` writes `service_id` and `category_id`, and
-  `TechnicianController::dashboard()` plus `/api/tech_orders` query
-  `items.category_id`. Checkout and the technician dashboard therefore fail
-  against the real schema. Marked with `markTestIncomplete()` in
-  `Auth/PortalRedirectTest`.
 - **Most API routes are unauthenticated.** Only `/api/user` requires a Sanctum
-  token. Closing the rest requires the mobile client to start sending its token.
-- **Email verification is not enforced** on the three portals — only on `/home`.
+  token. The React Native client stores its token at login but only attaches the
+  `Authorization` header inside one screen's `useEffect`, so closing the rest
+  needs a small change on the client first.
 - **`GET /logout`** sits inside the admin middleware group, so only
   administrators can use it. `POST /logout` works for everyone.
 - `App\Models\Cart` and `App\Models\technician` are stubs with no backing table.
+- The view directory `resources/views/laravel-examples/availibility` is
+  misspelled.
 
 [spatie]: https://spatie.be/docs/laravel-permission

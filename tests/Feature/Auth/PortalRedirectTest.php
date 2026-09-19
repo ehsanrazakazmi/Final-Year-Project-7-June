@@ -45,17 +45,6 @@ class PortalRedirectTest extends TestCase
     /** @dataProvider roleProvider */
     public function test_a_role_may_open_its_own_portal(string $role, string $home): void
     {
-        if ($role === 'technician') {
-            $this->markTestIncomplete(
-                'KNOWN BUG: TechnicianController::dashboard() queries items.category_id, '.
-                'which does not exist. The items table has product_id/availability_id/'.
-                'order_id/quantity, while CheckoutController writes service_id and '.
-                'category_id. Checkout, this dashboard and /api/tech_orders are all '.
-                'broken against the real schema. See technicianpanel/introduction for '.
-                'a route that does work.'
-            );
-        }
-
         $user = User::factory()->{$role}()->create();
 
         $this->actingAs($user)->get($home)->assertOk();
