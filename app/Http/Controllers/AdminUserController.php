@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\User;
 use App\Notifications\AccountInvitation;
 use Illuminate\Http\Request;
@@ -66,6 +67,7 @@ class AdminUserController extends Controller
     {
         return view('adminpanel.users.create', [
             'roles' => $this->assignableRoles(),
+            'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
@@ -75,6 +77,11 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in($this->assignableRoles())],
+            // A technician only sees orders whose items match their category,
+            // so TechnicianController::dashboard() returns nothing without it.
+            'category_id' => ['nullable', 'required_if:role,technician', 'exists:categories,id'],
+        ], [
+            'category_id.required_if' => 'Choose the category this technician works in.',
         ]);
 
         $user = new User();
@@ -83,6 +90,7 @@ class AdminUserController extends Controller
         // Placeholder only - unusable until the invitee sets their own.
         $user->password = Hash::make(Str::random(64));
         $user->role = User::roleValueFor($data['role']);
+        $user->category_id = $data['role'] === 'technician' ? $data['category_id'] : null;
         $user->save();
 
         $user->assignRoleByName($data['role']);
@@ -101,6 +109,7 @@ class AdminUserController extends Controller
         return view('adminpanel.users.edit', [
             'user' => $user,
             'roles' => $this->assignableRoles(),
+            'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
@@ -110,6 +119,11 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in($this->assignableRoles())],
+            // A technician only sees orders whose items match their category,
+            // so TechnicianController::dashboard() returns nothing without it.
+            'category_id' => ['nullable', 'required_if:role,technician', 'exists:categories,id'],
+        ], [
+            'category_id.required_if' => 'Choose the category this technician works in.',
         ]);
 
         // Don't let the last admin demote themselves out of the admin portal.
@@ -121,6 +135,7 @@ class AdminUserController extends Controller
 
         $user->name = $data['name'];
         $user->email = $data['email'];
+        $user->category_id = $data['role'] === 'technician' ? $data['category_id'] : null;
         $user->save();
 
         $user->assignRoleByName($data['role']);

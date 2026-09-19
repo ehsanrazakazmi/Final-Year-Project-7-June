@@ -39,7 +39,7 @@
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold;">Total Amount<br> (Approximated Charges)</td>
-                                    <td>{{$order->total}}</td>
+                                    <td>{{ "Rs " . number_format($order->total) }}</td>
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold;">User</td>
@@ -53,10 +53,12 @@
                                     <td style="font-weight: bold;">Phone</td>
                                     <td>{{$order->phone}}</td>
                                 </tr>
-                                <tr>
-                                    <td style="font-weight: bold;">Category</td>
-                                    <td>{{$order->category_id}}</td>
-                                </tr>
+                                <!-- Just reducing the complexity of the code by removing the unnecessary user_id and category_id fields 
+                                    <tr>
+                                        <td style="font-weight: bold;">Category</td>
+                                        <td>{{$order->category_id}}</td>
+                                    </tr>
+                                -->
                                 <tr>
                                     <td style="font-weight: bold;">Address</td>
                                     <td>{{$order->address}}</td>

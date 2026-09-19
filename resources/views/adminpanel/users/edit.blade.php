@@ -38,7 +38,7 @@
                                value="{{ old('email', $user->email) }}" required>
                     </div>
 
-                    <div class="form-group mb-4">
+                    <div class="form-group mb-3">
                         <label for="role" class="form-control-label">{{ __('Role') }}</label>
                         <select id="role" name="role" class="form-control" required>
                             @foreach ($roles as $option)
@@ -47,6 +47,23 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    {{-- See create.blade.php: a technician with no category gets an
+                         empty dashboard, since SQL never matches `category_id = NULL`. --}}
+                    <div class="form-group mb-4" id="category-field"
+                         @style(['display: none' => old('role', $user->roleName()) !== 'technician'])>
+                        <label for="category_id" class="form-control-label">{{ __('Category') }}</label>
+                        <select id="category_id" name="category_id" class="form-control">
+                            <option value="">Select a category</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    @selected((int) old('category_id', $user->category_id) === $category->id)>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-secondary">Only used for technicians &mdash; it decides which jobs they see.</small>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
@@ -58,4 +75,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Show the Category field only when the selected role is technician.
+    (function () {
+        var role = document.getElementById('role');
+        var field = document.getElementById('category-field');
+        if (!role || !field) return;
+        function sync() { field.style.display = role.value === 'technician' ? '' : 'none'; }
+        role.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 @endsection

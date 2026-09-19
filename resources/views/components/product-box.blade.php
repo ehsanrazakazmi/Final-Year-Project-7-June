@@ -1,39 +1,47 @@
-<section  class="product-box">
+<section class="product-box">
     <div class="image">
-        <img src="{{asset('storage/' . $product->image)}}" alt="N/A">
+        {{-- Services uploaded without an image rendered a broken-image icon.
+             Fall back to a placeholder instead. --}}
+        @php $img = $product->image ? asset('storage/'.$product->image) : null; @endphp
+
+        @if ($img)
+            <img src="{{ $img }}" alt="{{ $product->title }}"
+                 onerror="this.closest('.image').classList.add('no-image'); this.remove();">
+        @else
+            <span class="image-placeholder" aria-hidden="true"></span>
+        @endif
+
         @auth
             @if (auth()->user()->wishlist->contains($product))
-                <form action="{{route('removeFromWishlist', $product->id)}}"method='post'>
+                <form action="{{ route('removeFromWishlist', $product->id) }}" method="post">
                     @csrf
-                    <button class="add-to-wishlist" type="submit">Remove From Wishlist</button>
-                </form>               
+                    <button class="add-to-wishlist" type="submit">Remove from wishlist</button>
+                </form>
             @else
-                <form action="{{route('addToWishlist', $product->id)}}"method='post'>
+                <form action="{{ route('addToWishlist', $product->id) }}" method="post">
                     @csrf
-                    <button class="add-to-wishlist" type="submit">Add to Wishlist</button>
-                </form>                 
+                    <button class="add-to-wishlist" type="submit">Add to wishlist</button>
+                </form>
             @endif
         @endauth
     </div>
-    <a href="{{route('product', $product->id)}}">
-        <div class="product-title">{{$product->title}}</div>
-        <div class="product-title">
-           {{$product->category->name}}
-        </div>
-     <div class="color-plateletes">
-        @foreach ($product->availabilities as $availability)    
-        <div >
-                {{$availability->available_from}} to {{$availability->available_to}} 
-        </div>
-        <div style="clear: both">
 
-        </div>
+    <a href="{{ route('product', $product->id) }}" class="product-body">
+        <div class="product-title">{{ $product->title }}</div>
 
-        @endforeach
-     </div>
-     <div class="product-category"></div>
-     <div class="product-price">Rs {{$product->price}}</div>
+        {{-- The category used to reuse .product-title, so it rendered in the
+             same colour and weight as the service name, and the real
+             .product-category div was left empty. --}}
+        <div class="product-category">{{ $product->category->name ?? '' }}</div>
+
+        @if ($product->availabilities->isNotEmpty())
+            <ul class="product-availability">
+                @foreach ($product->availabilities as $availability)
+                    <li>{{ $availability->available_from }} &ndash; {{ $availability->available_to }}</li>
+                @endforeach
+            </ul>
+        @endif
+
+        <div class="product-price">Rs {{ number_format($product->price) }}</div>
     </a>
-     
-    </section>
-
+</section>

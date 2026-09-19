@@ -2,11 +2,7 @@
 
 @section('content')
 <div>
-    @if (session('success'))
-        <div class="alert alert-success mx-4" role="alert">
-            <span class="text-white">{{ session('success') }}</span>
-        </div>
-    @endif
+    {{-- Success flashes render once, globally, in layouts/app.blade.php. --}}
 
     @if ($errors->any())
         <div class="alert alert-danger mx-4" role="alert">

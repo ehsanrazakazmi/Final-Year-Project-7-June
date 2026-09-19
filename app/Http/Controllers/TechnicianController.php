@@ -61,8 +61,18 @@ class TechnicianController extends Controller
     }
     public function updateStatus($id)
     {
-        Order::findOrFail($id)->update(['status' => 'accepted']);
-        return back()->with('success', 'status Updated!');
+        $order = Order::with('user')->findOrFail($id);
+        $order->update(['status' => 'accepted']);
+
+        // Notify administrators only. The old call in store() used User::all(),
+        // which pushed the notification to residents and technicians too.
+        $admins = User::role('admin')->get();
+
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new TechOrderNotification($order, Auth::user()));
+        }
+
+        return back()->with('success', 'Order accepted. The admin has been notified.');
     }
 
     public function chat()

@@ -35,7 +35,11 @@
                     <h5>Technician Profile Picture</h5>
                 </div>
                 <div class="card-body">
-                    <img src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="..." class="w-100 border-radius-lg shadow-sm">
+                    @if (Auth::user()->profile_photo_path)
+                        <img src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="{{ Auth::user()->name }}" class="w-100 border-radius-lg shadow-sm">
+                    @else
+                        <p class="text-sm text-secondary mb-0">No profile photo uploaded.</p>
+                    @endif
                 </div>
             </div>
         </div>

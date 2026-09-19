@@ -14,7 +14,9 @@
               <p class="user-ph_no">
                 {{Auth::user()->ph_no}}
               </p>
-              <img src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="..." style="width: 250px; border-radius:5" >
+              @if (Auth::user()->profile_photo_path)
+                  <img src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="{{ Auth::user()->name }}">
+                @endif
             </div>
             
             <div class="user-btn">
@@ -43,7 +45,7 @@
                 <tr>
                   <td>{{$order->id}}</td>
                   <td>{{$order->items->count()}}</td>
-                  <td>{{$order->total / 100}}</td>
+                  <td>{{ "Rs " . number_format($order->total) }}</td>
                   <td>{{\Carbon\Carbon::parse($order->created_at)->format('d/m/Y')}}</td>
                   <td>{{$order->status}}</td>
                 </tr>   

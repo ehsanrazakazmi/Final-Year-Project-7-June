@@ -16,15 +16,8 @@
                             </button>
                         </div>
                     @endif
-                    @if(session('success'))
-                        <div class="m-3  alert alert-success alert-dismissible fade show" id="alert-success" role="alert">
-                            <span class="alert-text text-white">
-                            {{ session('success') }}</span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                                <i class="fa fa-close" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    @endif
+                    {{-- Success flashes render once, globally, in layouts/app.blade.php.
+                         This block duplicated them on the page. --}}
                     <div class="card-header pb-0 text-left bg-transparent">
                         <h4 class="mb-0">Forgot your password? Enter your email here</h4>
                     </div>
@@ -50,10 +43,10 @@
             </div>
             <div class="col-md-6">
                 {{-- <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                    <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image:url('../assets/img/curved-images/curved6.jpg')"></div>
+                    <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image:url('{{ asset('assets/img/curved-images/curved6.jpg') }}')"></div>
                 </div> --}}
                 <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                    <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image:url('../assets/img/curved-images/1674812516344.jpg')"></div>
+                    <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image:url('{{ asset('assets/img/curved-images/1674812516344.jpg') }}')"></div>
                   </div>
             </div>
         </div>

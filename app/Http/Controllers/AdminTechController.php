@@ -38,9 +38,12 @@ class AdminTechController extends Controller
             'availabilities' => 'required',
             'price' => 'required',
             // 'rating' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-
-
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:8192',
+        ], [
+            // Without this, a file rejected by PHP's upload_max_filesize shows
+            // only "The image failed to upload." with no hint as to why.
+            'image.uploaded' => 'The image could not be uploaded - it is larger than the server limit (8 MB).',
+            'image.max' => 'The image must be 8 MB or smaller.',
         ]);
         //store Image
         $image_name = 'products/'. time() . rand(0, 999) .'.'. $request->image->getClientOriginalExtension();
@@ -63,7 +66,9 @@ class AdminTechController extends Controller
 
         //return response
 
-        return back()->with('success', 'Products Saved!');
+        // back() left the admin on an empty create form after a successful save.
+        return redirect()->route('adminpanel.technicians')
+            ->with('success', 'Service created successfully.');
 
 
 
@@ -89,7 +94,10 @@ class AdminTechController extends Controller
         'availabilities' => 'required',
         'price' => 'required',
         // 'rating' => 'required',
-        'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:8192'
+    ], [
+        'image.uploaded' => 'The image could not be uploaded - it is larger than the server limit (8 MB).',
+        'image.max' => 'The image must be 8 MB or smaller.',
     ]);
     $product = Services::findOrFail($id);
 //store Image
@@ -102,14 +110,17 @@ class AdminTechController extends Controller
     $product ->update([
         'title' => $request->title,
         'category_id' => $request->category_id,
-        'price' => $request->price * 100,   //* 220,  for rupee to Dollars
+        // Was $request->price * 100, while store() saves the price as entered.
+        // Every edit multiplied the price by 100: 2500 -> 250000 -> 25000000.
+        'price' => $request->price,
         // 'rating' => $request->rating * 100,   //* 220,  for rupee to Dollars
         'description' => $request->description,
         'image' => $image_name
     ]);
     $product->availabilities()->sync($request->availabilities);
     //return response
-    return back()->with('success', 'Products Updated!');
+    return redirect()->route('adminpanel.technicians')
+        ->with('success', 'Service updated successfully.');
     }
 
 

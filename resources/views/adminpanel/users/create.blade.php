@@ -37,7 +37,7 @@
                                value="{{ old('email') }}" placeholder="name@example.com" required>
                     </div>
 
-                    <div class="form-group mb-4">
+                    <div class="form-group mb-3">
                         <label for="role" class="form-control-label">{{ __('Role') }}</label>
                         <select id="role" name="role" class="form-control" required>
                             <option value="">Select a role</option>
@@ -49,6 +49,23 @@
                         </select>
                     </div>
 
+                    {{-- A technician's dashboard lists shipped orders whose items
+                         match this category. Without it the dashboard is always
+                         empty, because SQL never matches `category_id = NULL`. --}}
+                    <div class="form-group mb-4" id="category-field"
+                         @style(['display: none' => old('role') !== 'technician'])>
+                        <label for="category_id" class="form-control-label">{{ __('Category') }}</label>
+                        <select id="category_id" name="category_id" class="form-control">
+                            <option value="">Select a category</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}" @selected((int) old('category_id') === $category->id)>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-secondary">Only used for technicians &mdash; it decides which jobs they see.</small>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('adminpanel.users.index') }}" class="btn btn-link text-dark mb-0">Cancel</a>
                         <button type="submit" class="btn bg-gradient-primary mb-0">Create and send invitation</button>
@@ -58,4 +75,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Show the Category field only when the selected role is technician.
+    (function () {
+        var role = document.getElementById('role');
+        var field = document.getElementById('category-field');
+        if (!role || !field) return;
+        function sync() { field.style.display = role.value === 'technician' ? '' : 'none'; }
+        role.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 @endsection

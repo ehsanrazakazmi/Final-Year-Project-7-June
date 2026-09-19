@@ -51,10 +51,18 @@
                 <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4" aria-labelledby="dropdownMenuButton">
                     @forelse ((auth()->user()?->notifications ?? []) as $notification)
                     <li class="mb-2">
-                    <a class="dropdown-item border-radius-md" href="javascript:;">
-                        <div class="d-flex py-1">
-                            Technician Has Accepted the order id: {{$notification->data['id']}} 
-                            
+                    <a class="dropdown-item border-radius-md" href="{{ isset($notification->data['order_id']) ? route('orders.view', $notification->data['order_id']) : 'javascript:;' }}">
+                        <div class="d-flex flex-column py-1">
+                            {{-- `message` is written by TechOrderNotification. Rows
+                                 created before it carried only an order id, so fall
+                                 back rather than throwing on them. --}}
+                            <span class="text-sm">
+                                {{ $notification->data['message']
+                                    ?? 'A technician accepted order #'.($notification->data['order_id'] ?? $notification->data['id'] ?? '?') }}
+                            </span>
+                            <span class="text-xs text-secondary">
+                                <i class="fa fa-clock me-1"></i>{{ $notification->created_at?->diffForHumans() }}
+                            </span>
                         </div>
                     </a>
                 </li>
@@ -70,7 +78,7 @@
                     <a class="dropdown-item border-radius-md" href="javascript:;">
                     <div class="d-flex py-1">
                         <div class="my-auto">
-                        <img src="../assets/img/team-2.jpg" class="avatar avatar-sm  me-3 ">
+                        <img src="{{ asset('assets/img/team-2.jpg') }}" class="avatar avatar-sm  me-3 ">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                         <h6 class="text-sm font-weight-normal mb-1">
@@ -88,7 +96,7 @@
                     <a class="dropdown-item border-radius-md" href="javascript:;">
                     <div class="d-flex py-1">
                         <div class="my-auto">
-                        <img src="../assets/img/small-logos/logo-spotify.svg" class="avatar avatar-sm bg-gradient-dark  me-3 ">
+                        <img src="{{ asset('assets/img/small-logos/logo-spotify.svg') }}" class="avatar avatar-sm bg-gradient-dark  me-3 ">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                         <h6 class="text-sm font-weight-normal mb-1">

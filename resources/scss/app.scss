@@ -41,3 +41,6 @@
 
 // Technician portal skin - scoped to .tech-portal, must load last.
 @import 'admin/technician';
+
+// Resident portal skin - scoped to .resident-portal, must load last.
+@import 'pages/resident';

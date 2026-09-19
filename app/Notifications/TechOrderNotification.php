@@ -2,60 +2,64 @@
 
 namespace App\Notifications;
 
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Sent to administrators when a technician accepts an order.
+ *
+ * Previously this carried only the order id, so the admin bell could say no
+ * more than "Technician Has Accepted the order id: 3" - it named neither the
+ * technician nor the resident.
+ */
 class TechOrderNotification extends Notification
 {
     use Queueable;
-    public $id;
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-    public function __construct($id)
-    {
-        $this->id= $id;
+
+    public function __construct(
+        protected Order $order,
+        protected User $technician
+    ) {
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['database'];
     }
 
     /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * The resident who placed the order. Falls back to the name captured at
+     * checkout when the order is not linked to a user account.
      */
-    public function toMail($notifiable)
+    protected function residentName(): string
     {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+        return $this->order->user->name
+            ?? $this->order->name
+            ?? 'a resident';
     }
 
     /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
-            'id'=>$this->id
+            'type' => 'order_accepted',
+            'order_id' => $this->order->id,
+            'technician_id' => $this->technician->id,
+            'technician_name' => $this->technician->name,
+            'resident_name' => $this->residentName(),
+            'message' => sprintf(
+                '%s accepted %s\'s order #%d.',
+                $this->technician->name,
+                $this->residentName(),
+                $this->order->id
+            ),
         ];
     }
 }

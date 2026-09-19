@@ -35,7 +35,7 @@
                                     <td>{{$order->id}}</td>
                                     <td>{{$order->name}}</td>
                                     <td>3</td>
-                                    <td>{{$order->total / 100}}</td>
+                                    <td>{{ "Rs " . number_format($order->total) }}</td>
                                     <td>{{\Carbon\Carbon::parse($order->created_at)->format('d/m/Y')}}</td>
                                     <td>
                                         <span class="badge bg-@if($order->status == 'pending')warning
@@ -96,7 +96,7 @@
                                     <td>{{$order->id}}</td>
                                     <td>{{$order->user->name}}</td>
                                     <td>{{$order->items->count()}}</td>
-                                    <td>{{$order->total / 100}}</td>
+                                    <td>{{ "Rs " . number_format($order->total) }}</td>
                                     <td>{{\Carbon\Carbon::parse($order->created_at)->format('d/m/Y')}}</td>
                                     <td>
                                         <span class="badge bg-@if($order->status == 'pending')warning

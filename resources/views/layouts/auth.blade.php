@@ -16,7 +16,7 @@
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
-<body style="background-image: url('../assets/img/curved-images/module0.png')">
+<body style="background-image: url('{{ asset('assets/img/curved-images/module0.png') }}')">
     <div id="app">
         {{-- <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">

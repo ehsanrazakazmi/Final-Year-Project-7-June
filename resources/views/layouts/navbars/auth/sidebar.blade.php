@@ -3,7 +3,7 @@
   <div class="sidenav-header">
     <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
     <a class="align-items-center d-flex m-0 navbar-brand text-wrap" href="{{ route('adminpanel') }}">
-        <img src="../assets/img/logo-ct.png" class="navbar-brand-img w-80 h-150" alt="...">
+        <img src="{{ asset('assets/img/logo-ct.png') }}" class="navbar-brand-img w-80 h-150" alt="...">
         
     </a>
   </div>
@@ -340,7 +340,7 @@
   </div>
   <div class="sidenav-footer mx-3 mt-7 ">
     <div class="card card-background shadow-none card-background-mask-secondary" id="sidenavCard">
-      <div class="full-background" style="background-image: url('../assets/img/curved-images/comp-portal-bg.PNG')"></div>
+      <div class="full-background" style="background-image: url('{{ asset('assets/img/curved-images/comp-portal-bg.PNG') }}')"></div>
       <div class="card-body text-start p-3 w-100">
         
         <div class="docs-info">

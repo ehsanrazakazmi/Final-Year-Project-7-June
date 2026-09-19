@@ -17,12 +17,26 @@
               <div class="card-body">
                   <form action="{{route('adminpanel.technicians.store')}}" method="post" enctype="multipart/form-data">
                       @csrf
+                    {{-- Inline @error messages use Bootstrap's .invalid-feedback,
+                         which is display:none unless a sibling carries .is-invalid.
+                         This summary guarantees failures are visible regardless of
+                         where each field sits in the markup. --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger" role="alert">
+                            <strong class="text-white d-block mb-1">Please fix the following:</strong>
+                            <ul class="mb-0 ps-3 text-white">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                       <div class="row mb-3">
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="name">Title</label>
-                                <input type="text" name="title" id="title" class="form-control @error('title') is_invalid @enderror" value="{{old('title')}}">
+                                <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" value="{{old('title')}}">
                                 @error('title')
                                 <span class="invalid-feedback">
                                     <strong>{{$message}}</strong>
@@ -35,7 +49,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="name">Price</label>
-                                <input type="number" name="price" id="price" class="form-control @error('price') is_invalid @enderror" value="{{old('price')}}">
+                                <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" value="{{old('price')}}">
                                 @error('price')
                                 <span class="invalid-feedback">
                                     <strong>{{$message}}</strong> 
@@ -70,7 +84,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="image">Image</label>
-                                <input type="file" name="image" class="form-control @error('image') is_invalid @enderror">
+                                <input type="file" name="image" class="form-control @error('image') is-invalid @enderror">
                                 @error('image')
                                     <span class="invalid-feedback">
                                         <strong>{{$message}}</strong>
@@ -111,7 +125,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="description">Description</label>
-                                <textarea name="description" id="description" cols="30" rows="10" class="form-control @error('description') is_invalid @enderror" placeholder="Description about technicians ........"></textarea>
+                                <textarea name="description" id="description" cols="30" rows="10" class="form-control @error('description') is-invalid @enderror" placeholder="Description about technicians ........"></textarea>
                                 @error('description')
                                     <span class="invalid-feedback">
                                         <strong>{{$message}}</strong>
