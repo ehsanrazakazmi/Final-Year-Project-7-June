@@ -49,7 +49,10 @@ Auth::routes(['verify' => true]);
 
 Route::get('/home', [App\Http\Controllers\IndexController::class, 'index'])->name('home')->middleware('verified');
 
-Route::group(['middleware' => 'admin'], function () {
+// 'verified' is enforced here because User implements MustVerifyEmail and
+// Auth::routes(['verify' => true]) is enabled - previously only /home checked it,
+// so every portal was reachable without confirming the address.
+Route::group(['middleware' => ['admin', 'verified']], function () {
     Route::get('/adminpanel', [HomeController::class, 'home'])->name('adminpanel');
     // Route::get('/adminpanel', [HomeController::class, 'getTotalServices'])->name('adminpanel');
     Route::get('msgs', [HomeController::class, 'read'])->name('msgs');
@@ -134,7 +137,7 @@ Route::post('/reset-password', [ChangePasswordController::class, 'changePassword
 
 // Resident Portal
 
-Route::group(['middleware' => 'resident'], function () {
+Route::group(['middleware' => ['resident', 'verified']], function () {
     Route::group(['prefix' => 'pages'], function () {
         Route::get('/home', [PagesController::class, 'home'])->name('home');
         Route::get('/cart', [PagesController::class, 'cart'])->name('cart');
@@ -163,7 +166,7 @@ Route::group(['middleware' => 'resident'], function () {
 
 
 // Technicina Panel
-Route::group(['middleware' => 'technician'], function () {
+Route::group(['middleware' => ['technician', 'verified']], function () {
 
     Route::group(['prefix' => 'technicianpanel'], function () {
         Route::get('/', [TechnicianController::class, 'dashboard'])->name('technicianpanel');
@@ -180,8 +183,17 @@ Route::group(['middleware' => 'technician'], function () {
     });
 });
 
-Route::get('chat', [App\Http\Controllers\HomeController::class, 'chat'])->name('chat');
-
-Route::get('messages', [App\Http\Controllers\HomeController::class, 'messages'])->name('messages');
-
-Route::post('messages', [App\Http\Controllers\HomeController::class, 'messageStore'])->name('messageStore');
+/*
+ * These were reachable by anyone. GET /messages returned every message with the
+ * full related user object attached - emails, phone numbers, role, coordinates -
+ * and POST /messages called Auth::user()->messages() with no user, so it threw
+ * for guests. chat.blade.php also reads Auth::user()->role unguarded.
+ *
+ * Chat.vue fetches /messages with axios from the browser, so the session cookie
+ * is sent and the `auth` middleware is transparent to it.
+ */
+Route::middleware('auth')->group(function () {
+    Route::get('chat', [App\Http\Controllers\HomeController::class, 'chat'])->name('chat');
+    Route::get('messages', [App\Http\Controllers\HomeController::class, 'messages'])->name('messages');
+    Route::post('messages', [App\Http\Controllers\HomeController::class, 'messageStore'])->name('messageStore');
+});
