@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->integer('role'); // 1 = admin, 2 = resident, 3 = technician (see User::ROLE_MAP)
-            $table->integer('category_id'); 
+            $table->integer('category_id')->nullable(); 
             $table->string('password');
             $table->rememberToken();
             $table->string('profile_photo_path', 2048)->nullable();

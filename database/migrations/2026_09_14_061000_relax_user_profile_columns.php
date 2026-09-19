@@ -30,6 +30,12 @@ return new class extends Migration
 
     public function up(): void
     {
+        // Raw MySQL DDL - other drivers (e.g. sqlite under test) create these
+        // columns nullable already, so there is nothing to relax.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         foreach ($this->columns as $column => $type) {
             if (Schema::hasColumn('users', $column)) {
                 DB::statement("ALTER TABLE `users` MODIFY `{$column}` {$type} NULL DEFAULT NULL");
@@ -39,6 +45,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         foreach ($this->columns as $column => $type) {
             if (! Schema::hasColumn('users', $column)) {
                 continue;

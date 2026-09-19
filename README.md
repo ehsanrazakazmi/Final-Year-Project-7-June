@@ -1,66 +1,163 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GharBar — Home Services Portal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel application for booking home-maintenance services, built around three
+separate portals — **administrator**, **resident** and **technician** — each
+with its own layout, navigation and access rules. A companion React Native app
+consumes the same backend over a REST API.
 
-## About Laravel
+Originally a final-year project; now maintained as a portfolio piece.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## What it does
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Residents browse a catalogue of services (plumbing, electrical, carpentry,
+cleaning), pick an **availability window** — a named time slot such as
+*subah 05:00–09:00* — and place an order. Administrators manage the catalogue,
+the availability windows and the user base. Technicians see the jobs assigned to
+their category.
 
-## Learning Laravel
+| Portal | Path | Who |
+|---|---|---|
+| Admin | `/adminpanel` | role 1 |
+| Resident | `/pages/home` | role 2 |
+| Technician | `/technicianpanel` | role 3 |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Architecture notes
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Roles.** Authorisation uses [spatie/laravel-permission][spatie] with exactly
+three seeded roles (`admin`, `resident`, `technician`) — there is deliberately
+no UI to create or delete roles. A legacy integer `users.role` column is kept in
+sync alongside the Spatie role, because the REST API returns raw `users` rows
+and the React Native client switches on that integer.
 
-## Laravel Sponsors
+**One source of truth for routing.** `App\Support\Portals` maps a role to its
+landing path. The three role middleware (`Admin`, `resident`, `technician`) all
+extend `App\Http\Middleware\EnsureRole`, which resolves through the same helper
+— so the guard and the redirect target can never disagree and loop.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+**Account creation is admin-only in spirit.** An administrator creates a user
+with a name, an email and a role; the new user receives an invitation email and
+chooses their own password. Administrators never see or set passwords. Public
+self-registration still exists but is hard-locked to the `resident` role.
 
-### Premium Partners
+**Invitation tokens** use a dedicated `invitations` password broker with a
+seven-day expiry, separate from the 60-minute password-reset broker.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+---
 
-## Contributing
+## Requirements
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP 8.1+ (developed on 8.2)
+- MySQL / MariaDB 10.4+
+- Composer, Node.js and npm
 
-## Code of Conduct
+## Setup
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer install
+npm install
 
-## Security Vulnerabilities
+cp .env.example .env
+php artisan key:generate
+# set DB_DATABASE / DB_USERNAME / DB_PASSWORD in .env
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+php artisan migrate --seed
+npm run build            # required - see "Assets" below
 
-## License
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Seeding creates the three roles, four service categories, and one administrator.
+**The admin password is generated randomly and printed once** to the console:
+
+```
+Admin created
+  email    : admin@gharbaar.local
+  password : eEZwlyw8
+  Shown once - copy it now.
+```
+
+### Assets
+
+Several layouts use `@vite(...)`. If neither a Vite dev server nor a production
+build is present, those pages fail with *"Vite manifest not found"*. Either run
+`npm run dev` while developing, or `npm run build` once. The build is not
+committed, so a fresh clone needs it.
+
+### Serving it properly
+
+`php artisan serve` is safe by default — it binds to `127.0.0.1` only. If you
+serve the project through Apache instead, point the document root at
+**`public/`**, not at the project root. Serving the project root exposes `.env`,
+`.git/` and `storage/logs/` as downloadable static files.
+
+---
+
+## Tests
+
+```bash
+php artisan test           # or: vendor/bin/phpunit
+```
+
+Tests run against MySQL (see `phpunit.xml`) so they exercise the same SQL
+dialect as production — the admin dashboard uses `YEAR()`, which SQLite lacks.
+Create the database once:
+
+```sql
+CREATE DATABASE gbsb_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+```
+
+Coverage focuses on the parts that are easy to break silently:
+
+| Suite | What it pins down |
+|---|---|
+| `Auth/PortalRedirectTest` | each role lands on its own portal, is bounced out of the others, and an unrecognised role is signed out rather than looping |
+| `Auth/RegistrationTest` | a forged `role` in the signup request cannot create an administrator |
+| `Api/TableAllowlistTest` | `/api/tables/{table}` serves catalogue tables only; no password hash is reachable |
+| `AvailabilityRelationTest` | the service ↔ availability pivot stores its two foreign keys the right way round |
+
+That last one exists because `belongsToMany()` with its key arguments reversed
+writes swapped ids without raising an error — the kind of bug only a round-trip
+assertion catches.
+
+---
+
+## The React Native app
+
+A separate Expo/React Native client logs in through `/api/sanctum/token` and
+reads the catalogue, wishlist and order status endpoints.
+
+Two endpoints keep a deliberate backward-compatibility shim, marked
+`// COMPATIBILITY:` in `routes/api.php`: the app posts `colors_id` and reads
+`item.color.code` / `.code1`, names that predate the availability rename. The
+API rebuilds that shape rather than breaking the installed app.
+
+The client's base URL is `http://127.0.0.1:8000`, which only resolves on the
+host itself. To run it against a device or emulator, serve with
+`php artisan serve --host=0.0.0.0` and point the app at `10.0.2.2:8000`
+(Android emulator) or the machine's LAN address.
+
+---
+
+## Known issues
+
+Kept visible rather than hidden:
+
+- **The `items` table is inconsistent.** The migration defines
+  `product_id / availability_id / order_id / quantity`, while
+  `CheckoutController` writes `service_id` and `category_id`, and
+  `TechnicianController::dashboard()` plus `/api/tech_orders` query
+  `items.category_id`. Checkout and the technician dashboard therefore fail
+  against the real schema. Marked with `markTestIncomplete()` in
+  `Auth/PortalRedirectTest`.
+- **Most API routes are unauthenticated.** Only `/api/user` requires a Sanctum
+  token. Closing the rest requires the mobile client to start sending its token.
+- **Email verification is not enforced** on the three portals — only on `/home`.
+- **`GET /logout`** sits inside the admin middleware group, so only
+  administrators can use it. `POST /logout` works for everyone.
+- `App\Models\Cart` and `App\Models\technician` are stubs with no backing table.
+
+[spatie]: https://spatie.be/docs/laravel-permission

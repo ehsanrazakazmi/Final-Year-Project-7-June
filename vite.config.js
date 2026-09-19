@@ -6,7 +6,12 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
+                // All four are referenced by @vite(...) in the Blade layouts.
+                // Omitting any of them makes those pages throw
+                // "Unable to locate file in Vite manifest" after a build.
                 'resources/sass/app.scss',
+                'resources/scss/app.scss',
+                'resources/css/app.css',
                 'resources/js/app.js',
             ],
             refresh: true,

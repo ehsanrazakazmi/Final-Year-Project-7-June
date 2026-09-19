@@ -4,4 +4,28 @@
 .env
 .env.backup
 .env.production
-/storage/logs/laravel.log
+
+# Build output - regenerate with `npm run build`
+/public/build
+# Written by `npm run dev`; its presence makes Laravel load assets from the
+# Vite dev server. Committing it breaks any clone where that server isn't running.
+/public/hot
+/public/storage
+
+# Generated at runtime. Compiled Blade templates in particular must not be
+# committed: a checkout restores stale .php with a fresh mtime, which then
+# shadows the real .blade.php source until `php artisan view:clear`.
+/storage/framework/views/*.php
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/lsp-*.php
+/storage/logs/*.log
+/storage/*.key
+
+# Tooling
+.phpunit.result.cache
+auth.json
+npm-debug.log
+yarn-error.log
+/.idea
+/.fleet

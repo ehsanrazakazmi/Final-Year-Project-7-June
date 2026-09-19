@@ -23,6 +23,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // RENAME TABLE / CHANGE COLUMN are MySQL syntax. A database created from
+        // the updated create_* migrations already has the new names.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         if (Schema::hasTable('colors') && ! Schema::hasTable('availabilities')) {
             DB::statement('RENAME TABLE `colors` TO `availabilities`');
         }
@@ -50,6 +56,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         if (Schema::hasColumn('items', 'availability_id')) {
             DB::statement('ALTER TABLE `items` CHANGE `availability_id` `color_id` BIGINT UNSIGNED NOT NULL');
         }
