@@ -36,11 +36,21 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
-                'host' => env('PUSHER_HOST'),
-                // 'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusher.com',
+                // `cluster` was missing and `host` was a bare env() with no
+                // fallback. With PUSHER_HOST empty in .env that produced the
+                // URI "https://:443", so every broadcast threw
+                // MalformedUriException and chat messages saved to the database
+                // but never reached the recipient - the bubble stayed on the
+                // pending clock icon.
+                //
+                // Set PUSHER_HOST (e.g. 127.0.0.1) only when self-hosting with
+                // beyondcode/laravel-websockets; otherwise the cluster-derived
+                // Pusher Cloud host is used.
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+                'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusher.com',
                 'port' => env('PUSHER_PORT', 443),
                 'scheme' => env('PUSHER_SCHEME', 'https'),
-                // 'encrypted' => true,
+                'encrypted' => true,
                 'useTLS' => env('PUSHER_SCHEME', 'https') === 'https',
             ],
             'client_options' => [

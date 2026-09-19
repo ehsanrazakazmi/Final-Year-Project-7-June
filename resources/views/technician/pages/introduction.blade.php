@@ -34,7 +34,7 @@
                 <div class="card-header">
                     <h5>Technician Profile Picture</h5>
                 </div>
-                <div class="card-body" style="background-color: rgb(137, 100, 162)">
+                <div class="card-body">
                     <img src="{{ asset('storage/'.Auth::user()->profile_photo_path) }}" alt="..." class="w-100 border-radius-lg shadow-sm">
                 </div>
             </div>
@@ -44,10 +44,10 @@
                 <div class="card-header">
                     <h5>Technician Information</h5>
                 </div>
-                <div class="card-body" style="background-color: rgb(137, 100, 162)">
-                    <p style="color: purple" class="text-primary">Name: {{Auth::user()->name}}</p>
-                    <p style="color: purple">Email: {{Auth::user()->email}}</p>
-                    <p style="color: purple">Phone Number: {{Auth::user()->ph_no}}</p>
+                <div class="card-body">
+                    <p class="text-primary">Name: {{Auth::user()->name}}</p>
+                    <p>Email: {{Auth::user()->email}}</p>
+                    <p>Phone Number: {{Auth::user()->ph_no}}</p>
                     <div class="d-flex mt-2">
                         <a href="{{route('technicianpanel.pages.profile')}}"><button class="btn btn-primary">Edit Profile</button></a>
                     </div>

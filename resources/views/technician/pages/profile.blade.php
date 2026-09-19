@@ -11,7 +11,7 @@
                 <div class="card-header">
                     <h5>Edit</h5>
                 </div>
-                <form action="{{ route('technicianpanel.pages.store') }}" method="post" role="form text-left" enctype="multipart/form-data"  style="background-color: rgb(115, 79, 141)">
+                <form action="{{ route('technicianpanel.pages.store') }}" method="post" role="form text-left" enctype="multipart/form-data">
                     @csrf
                 <div class="card-body" >
                         <div class="col-md-6">
@@ -82,7 +82,7 @@
                 <div class="card-header">
                     <h5>Edit profile here</h5>
                 </div>
-                <form action="{{ route('technicianpanel.pages.store') }}" method="post" role="form text-left" enctype="multipart/form-data"  style="background-color: rgb(115, 79, 141)">
+                <form action="{{ route('technicianpanel.pages.store') }}" method="post" role="form text-left" enctype="multipart/form-data">
                     @csrf
                 <div class="card-body" >
                         <div class="col-md-6">
