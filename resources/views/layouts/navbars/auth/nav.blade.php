@@ -10,7 +10,7 @@
         </nav>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4 d-flex justify-content-end" id="navbar"> 
             <div class="nav-item d-flex align-self-end">
-                <a href="http://127.0.0.1:8000" target="_blank" class="btn btn-primary active mb-0 text-white" role="button" aria-pressed="true">
+                <a href="{{ url('/') }}" target="_blank" class="btn btn-primary active mb-0 text-white" role="button" aria-pressed="true">
                     public Page
                 </a>
             </div>
@@ -22,10 +22,18 @@
             </div>
             <ul class="navbar-nav  justify-content-end">
             <li class="nav-item d-flex align-items-center">
-                <a href="{{ url('/logout')}}" class="nav-link text-body font-weight-bold px-0">
-                    <i class="fa fa-user me-sm-1"></i>
-                    <span class="d-sm-inline d-none">Sign Out</span>
-                </a>
+                {{-- Logging out is a POST. The GET route this used to point at
+                     lived inside the ['admin','verified'] group, so a resident
+                     or technician clicking Sign Out was bounced back to their
+                     own portal instead of being logged out. A GET logout is
+                     also triggerable by any page that embeds <img src="/logout">. --}}
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-link nav-link text-body font-weight-bold px-0 border-0 shadow-none">
+                        <i class="fa fa-user me-sm-1"></i>
+                        <span class="d-sm-inline d-none">Sign Out</span>
+                    </button>
+                </form>
             </li>
             <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
                 <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">

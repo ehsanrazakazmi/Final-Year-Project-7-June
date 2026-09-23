@@ -17,10 +17,13 @@
           </div>
           <ul class="navbar-nav me-auto ms-0 justify-content-end">
             <li class="nav-item d-flex align-items-center">
-              <a href="{{ url('/logout')}}" class="nav-link text-body font-weight-bold px-0">
-                <i class="fa fa-user me-sm-1"></i>
-                <span class="d-sm-inline d-none">يسجل دخول</span>
-              </a>
+              <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-link nav-link text-body font-weight-bold px-0 border-0 shadow-none">
+                  <i class="fa fa-user me-sm-1"></i>
+                  <span class="d-sm-inline d-none">يسجل دخول</span>
+                </button>
+              </form>
             </li>
             <li class="nav-item d-xl-none pe-3 d-flex align-items-center">
               <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">

@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,19 @@ use Tests\TestCase;
 class TableAllowlistTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * The endpoint now sits behind auth:sanctum, so these tests authenticate
+     * first. Being logged in must not be enough to read a table that is not on
+     * the allowlist - that is the point of the allowlist, and what the blocked
+     * cases below assert.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     /**
      * @return array<string, array{0: string}>

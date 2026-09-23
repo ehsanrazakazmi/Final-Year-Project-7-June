@@ -358,8 +358,11 @@ function errorMessageCard(id) {
     .find(".message-card[data-id=" + id + "]")
     .find("svg.loadingSVG")
     .remove();
+  // The card markup (vendor/Chatify/layouts/messageCard.blade.php) has no
+  // <p> - the text lives in .message - so this selector matched nothing and
+  // the warning icon was never added to a failed message.
   messagesContainer
-    .find(".message-card[data-id=" + id + "] p")
+    .find(".message-card[data-id=" + id + "] .message")
     .prepend('<span class="fas fa-exclamation-triangle"></span>');
 }
 

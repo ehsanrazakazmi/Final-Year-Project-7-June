@@ -11,7 +11,7 @@ class AvailabilityController extends Controller
     {
         $availabilities = Availability::all();
 
-        return view('laravel-examples/availibility.index', ['availabilities' => $availabilities]);
+        return view('laravel-examples/availability.index', ['availabilities' => $availabilities]);
     }
 
     public function store(Request $request)

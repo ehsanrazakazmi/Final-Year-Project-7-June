@@ -1,9 +1,7 @@
 <?php
 
-use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\mailController;
@@ -12,34 +10,20 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ResetController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\InfoUserController;
-use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\AdminTechController;
 use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\SetPasswordController;
-use App\Http\Controllers\PublicmailController;
 use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\TechProfileController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ResidentProfileController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 
 Route::get('/', [HomeController::class, 'public'])->name('public');
 Route::post('/', [HomeController::class, 'store'])->name('public.store');
@@ -78,7 +62,6 @@ Route::group(['middleware' => ['admin', 'verified']], function () {
     Route::get('static-sign-up', function () {
         return view('static-sign-up');
     })->name('sign-up');
-    Route::get('/logout', [SessionsController::class, 'destroy']);
     Route::get('/user-profile', [InfoUserController::class, 'create']);
     Route::post('/user-profile', [InfoUserController::class, 'store']);
 
@@ -109,7 +92,6 @@ Route::group(['middleware' => ['admin', 'verified']], function () {
         Route::put('/{id}', [OrderController::class, 'updateStatus'])->name('orders.view');
     });
 
-
     // User management - admins create accounts, invitees set their own password.
     Route::group(['prefix' => 'users'], function () {
         Route::get('/', [AdminUserController::class, 'index'])->name('adminpanel.users.index');
@@ -133,8 +115,6 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendEmail']);
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'resetPass'])->name('password.reset');
 Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('password.update');
 
-
-
 // Resident Portal
 
 Route::group(['middleware' => ['resident', 'verified']], function () {
@@ -152,7 +132,6 @@ Route::group(['middleware' => ['resident', 'verified']], function () {
         Route::get('/profile', [ResidentProfileController::class, 'create'])->name('pages.profile');
         Route::post('/profile', [ResidentProfileController::class, 'store'])->name('pages.profile');
 
-
         //Cart
         Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('addToCart');
         Route::post('/remove-from-cart/{id}', [CartController::class, 'removeFromCart'])->name('removeFromCart');
@@ -160,10 +139,6 @@ Route::group(['middleware' => ['resident', 'verified']], function () {
         Route::post('/remove-from-wishlist/{id}', [WishlistController::class, 'remove'])->name('removeFromWishlist');
     });
 });
-
-
-
-
 
 // Technicina Panel
 Route::group(['middleware' => ['technician', 'verified']], function () {
