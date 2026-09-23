@@ -66,5 +66,8 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\Admin::class,
         'technician' => \App\Http\Middleware\technician::class,
         'resident' => \App\Http\Middleware\resident::class,
+
+        // API role guard - answers 403 JSON instead of redirecting to a portal.
+        'api.role' => \App\Http\Middleware\EnsureApiRole::class,
     ];
 }

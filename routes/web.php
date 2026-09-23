@@ -147,7 +147,6 @@ Route::group(['middleware' => ['technician', 'verified']], function () {
         Route::get('/', [TechnicianController::class, 'dashboard'])->name('technicianpanel');
         Route::get('/introduction', [TechnicianController::class, 'intro'])->name('technicianpanel.introduction');
         Route::get('/technician/pages/view/{id}', [TechnicianController::class, 'view'])->name('technicianpanel.pages.view');
-        Route::post('/', [TechnicianController::class, 'store'])->name('technicianpanel.store');
         
 
         Route::get('/confirmed', [TechnicianController::class, 'confirmed'])->name('technicianpanel.confirmed');

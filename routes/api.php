@@ -1,16 +1,14 @@
 <?php
 
-use App\Models\User;
+use App\Models\Category;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Wishlist;
+use App\Http\Controllers\PagesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PagesController;
-use App\Http\Controllers\WishlistController;
-use App\Models\Category;
 use Illuminate\Validation\ValidationException;
 
 /*
@@ -18,15 +16,21 @@ use Illuminate\Validation\ValidationException;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
+| Two rules hold throughout this file:
+|
+|   1. The acting user comes from the token ($request->user()), never from a
+|      URL segment or a request body field. Endpoints used to take a
+|      {userId}, so any signed-in account could read another person's orders
+|      and wishlist, or place an order in someone else's name.
+|
+|   2. auth:sanctum establishes who you are; api.role establishes what you
+|      may do. Administrative endpoints - listing every order, editing
+|      orders, managing categories - are gated to the role that owns them.
+|
+| The React Native client was updated alongside these routes; see the notes
+| on each endpoint where its shape changed.
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
@@ -37,96 +41,92 @@ Route::post('/sanctum/token', function (Request $request) {
 
     $user = User::where('email', $request->email)->first();
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
+    if (! $user || ! Hash::check($request->password, $user->password)) {
         throw ValidationException::withMessages([
             'email' => ['The provided credentials are incorrect.'],
         ]);
     }
 
-    $token = $user->createToken($request->device_name)->plainTextToken;
-
-    $response = [
+    return response([
         'user' => $user,
-        'token' => $token,
-    ];
-    return response($response, 201);
+        'token' => $user->createToken($request->device_name)->plainTextToken,
+    ], 201);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated API
-|--------------------------------------------------------------------------
-|
-| Everything below requires a Sanctum token. These routes were previously
-| public, including writes: anyone could place orders, edit any order,
-| create categories or empty a wishlist without logging in.
-|
-| Only POST /sanctum/token stays open, since that is how a token is
-| obtained. The React Native client reaches every one of these from a
-| screen that renders only after login, so nothing is lost by requiring it.
-|
-*/
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get(
-        '/home_data',
-        [PagesController::class, 'home_data']
-    );
+    Route::get('/user', fn (Request $request) => $request->user());
+
+    /*
+    |----------------------------------------------------------------------
+    | Reference data - readable by any signed-in user
+    |----------------------------------------------------------------------
+    */
+
+    Route::get('/home_data', [PagesController::class, 'home_data']);
+
+    Route::get('/categories', fn () => response()->json(DB::table('categories')->get()));
 
     /**
      * Read-only access to a small set of catalogue tables.
      *
-     * This previously ran DB::table($table) on whatever name the caller supplied,
-     * so /api/tables/users returned every password hash, email, otp and
-     * remember_token to anyone, unauthenticated. The allowlist is deliberate:
-     * anything not named here is refused, so a table added later stays private
-     * by default rather than being exposed by accident.
+     * This once ran DB::table($table) on whatever name the caller supplied,
+     * so /api/tables/users returned every password hash, email and
+     * remember_token. The allowlist is deliberate: anything not named here
+     * is refused, so a table added later stays private by default.
      *
-     * 'wishlists' is required by the React Native app (src/screens/...).
+     * 'wishlists' was removed from the list. It is per-user data, and
+     * returning the whole table handed every user's wishlist to anyone who
+     * asked. The app reads its own via /api/wishlists below; the only other
+     * caller was a commented-out line in a screen that is never mounted.
      */
     Route::get('/tables/{table}', function ($table) {
-        $allowed = ['wishlists', 'categories', 'availabilities', 'services'];
+        $allowed = ['categories', 'availabilities', 'services'];
 
-        if (! in_array($table, $allowed, true)) {
-            abort(404);
-        }
+        abort_unless(in_array($table, $allowed, true), 404);
 
-        $data = DB::table($table)->get();
-
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => DB::table($table)->get()]);
     });
 
-    Route::get('/users/{userId}/wishlists', function ($userId) {
+    /*
+    |----------------------------------------------------------------------
+    | The signed-in user's own data
+    |----------------------------------------------------------------------
+    |
+    | These took the user id as a URL segment or body field. They now read
+    | it from the token, so the id is simply gone from the route. The RN
+    | screens were changed to match.
+    |
+    */
+
+    // was GET /users/{userId}/wishlists
+    Route::get('/wishlists', function (Request $request) {
         $wishlistProducts = DB::table('wishlists')
             ->join('services', 'wishlists.services_id', '=', 'services.id')
             ->join('categories', 'services.category_id', '=', 'categories.id')
-            ->where('wishlists.user_id', $userId)
+            ->where('wishlists.user_id', $request->user()->id)
             ->select('services.*', 'categories.name as category_name')
             ->get();
+
         return response()->json(['data' => $wishlistProducts]);
     });
 
-    Route::get('/order_status/{userId}', function ($userId) {
-        $orders = DB::table('orders')->where('user_id', $userId)->get();
+    // was GET /order_status/{userId}
+    Route::get('/order_status', function (Request $request) {
+        $orders = DB::table('orders')->where('user_id', $request->user()->id)->get();
         $data = [];
+
         foreach ($orders as $order) {
-            $items = DB::table('items')
-                ->where('order_id', $order->id)
-                ->get();
+            $items = DB::table('items')->where('order_id', $order->id)->get();
 
             foreach ($items as $item) {
-                $service = DB::table('services')
-                    ->where('id', $item->service_id)
-                    ->first();
+                $service = DB::table('services')->where('id', $item->service_id)->first();
+                $availability = DB::table('availabilities')->where('id', $item->availability_id)->first();
 
-                $availability = DB::table('availabilities')
-                    ->where('id', $item->availability_id)
-                    ->first();
-
-                // COMPATIBILITY: the React Native app reads item.color.code /
-                // .code1 / .name (Order_status.js). The table and columns were
-                // renamed to availabilities/available_from/available_to, so the
-                // old shape is rebuilt here. Remove once the app is updated.
+                // COMPATIBILITY: the app reads item.color.code / .code1 / .name
+                // (Order_status.js). The table and columns were renamed to
+                // availabilities/available_from/available_to, so the old shape
+                // is rebuilt here. Remove once the app is updated.
                 $color = $availability === null ? null : (object) [
                     'id' => $availability->id,
                     'name' => $availability->name,
@@ -144,179 +144,242 @@ Route::middleware('auth:sanctum')->group(function () {
                 ];
             }
         }
-        return response()->json($data);
-    });
-
-    Route::get('/tech_orders/{id}', function ($id) {
-        $cat_ord = DB::table('items')->where('category_id', $id)->get();
-
-        Log::error(' The technicina is is ==>  ' . $id);
-        Log::error(' The lis of orders categroy based are  ==>  ' . $cat_ord);
-        $data = [];
-
-        foreach ($cat_ord as $item) {
-            $order = DB::table('orders')
-                ->where('id', $item->order_id)
-                ->where('status', 'shipped')
-                ->first();
-            if ($order !== null) { {
-                    $data[] = [
-                        'order_id' => $order->id,
-                        'address' => $order->address,
-                        'status' => $order->status,
-                        'job' => $item->quantity,
-                    ];
-                }
-            }
-        }
-        Log::error(' The response is ready as  ==>  ' . json_encode($data));
 
         return response()->json($data);
     });
 
+    // was GET /item_present/{serviceId}/{userid}
+    Route::get('/item_present/{serviceId}', function (Request $request, $serviceId) {
+        $isPresent = DB::table('wishlists')
+            ->where('services_id', $serviceId)
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        return response()->json(['is_present' => $isPresent]);
+    });
+
+    // was POST /wishlist_add with user_id in the body
     Route::post('/wishlist_add', function (Request $request) {
-        $validateData = $request->validate([
-            'user_id' => 'required|exists:users,id',
+        $validated = $request->validate([
             'service_id' => 'required|exists:services,id',
-
         ]);
+
         $wishlist = new Wishlist;
-        $wishlist->user_id = $validateData['user_id'];
-        $wishlist->services_id = $validateData['service_id'];
+        $wishlist->user_id = $request->user()->id;
+        $wishlist->services_id = $validated['service_id'];
         $wishlist->save();
+
         return response()->json(['message' => 'product is successfully added to wishlist']);
     });
 
-    Route::post('/cart_add', function (Request $request) {
-        // dd($request->all());
-        Log::error('Error saving data to the database');
+    // was DELETE /wishlist_remove/{user_id}/{id}
+    Route::delete('/wishlist_remove/{serviceId}', function (Request $request, $serviceId) {
+        DB::table('wishlists')
+            ->where('user_id', $request->user()->id)
+            ->where('services_id', $serviceId)
+            ->delete();
 
-        $validateData = $request->validate([
-            'user_id' => 'required|exists:users,id',
+        return response()->json(['success' => true]);
+    });
+
+    /**
+     * Place an order.
+     *
+     * was POST /cart_add with user_id in the body - which meant an order
+     * could be placed in any other account's name. The owner is now the
+     * token holder. Contact details stay in the body because the app
+     * collects them per order, but they no longer decide who owns it.
+     */
+    Route::post('/cart_add', function (Request $request) {
+        $validated = $request->validate([
             'name' => 'required',
-            'email' => 'required',
+            'email' => 'required|email',
             'phone' => 'required',
             'address' => 'required',
-            'quantity' => 'required',
-            'service_id' => 'required',
-            // COMPATIBILITY: the app posts 'colors_id' (Wishlist.js). Kept as-is.
-            'colors_id' => 'required',
+            'quantity' => 'required|integer|min:1',
+            'service_id' => 'required|exists:services,id',
+            // COMPATIBILITY: the app posts 'colors_id' (Wishlist.js).
+            'colors_id' => 'required|exists:availabilities,id',
         ]);
 
-        // Prepare the SQL statement to insert the order data
-        $sql = "INSERT INTO orders (user_id, name, email, phone, address, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, now(), now())";
-        $params = [
-            $validateData['user_id'],
-            $validateData['name'],
-            $validateData['email'],
-            $validateData['phone'],
-            $validateData['address'],
-        ];
+        $service = DB::table('services')->where('id', $validated['service_id'])->first();
 
-        // Execute the SQL statement to insert the order data and get the inserted order ID
         $orderId = DB::table('orders')->insertGetId([
-            'user_id' =>  $validateData['user_id'],
-            'name' => $validateData['name'],
-            'address' => $validateData['address'],
+            'user_id' => $request->user()->id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'status' => 'pending',
+            // Stored at checkout so the figure stays what was ordered even if
+            // the price changes later, matching CheckoutController.
+            'total' => (float) ($service->price ?? 0) * (int) $validated['quantity'],
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // Prepare the SQL statement to insert the order item data
-        $sql = "INSERT INTO items (order_id, service_id, availability_id, quantity, created_at, updated_at)
-                VALUES (?, ?, ?, ?, now(), now())";
-        $params = [
-            $orderId,
-            $validateData['service_id'],
-            $validateData['colors_id'],
-            $validateData['quantity'],
-        ];
+        DB::table('items')->insert([
+            'order_id' => $orderId,
+            'service_id' => $validated['service_id'],
+            'availability_id' => $validated['colors_id'],
+            'category_id' => $service->category_id ?? null,
+            'quantity' => $validated['quantity'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        // Execute the SQL statement to insert the order item data
-        DB::insert($sql, $params);
-        $response = [
+        return response()->json([
             'message' => 'Order placed successfully',
-            'order_id' => $orderId
-        ];
-
-        Log::error('Error saving data to the database' . $orderId);
-
-        return response()->json($response);
+            'order_id' => $orderId,
+        ]);
     });
 
-    Route::get('/item_present/{serviceId}/{userid}', function ($serviceId, $userid) {
-        $is_present = DB::table('wishlists')
-            ->where('services_id', $serviceId)
-            ->where('user_id', $userid)
-            ->exists();
-        Log::error(" service id is =>" . $is_present);
+    /*
+    |----------------------------------------------------------------------
+    | Technician
+    |----------------------------------------------------------------------
+    */
 
-        return response()->json(['is_present' => $is_present]);
+    Route::middleware('api.role:technician')->group(function () {
+
+        /**
+         * Jobs waiting in this technician's trade.
+         *
+         * was GET /tech_orders/{id}, where {id} was the category - supplied
+         * by the caller, so a technician could list any trade's jobs, each
+         * row carrying a resident's address. The category now comes from the
+         * account.
+         *
+         * The app already called /api/tech_orders with no segment
+         * (Technician_Screens/Orders.js), which matched no route and 404'd,
+         * so this also makes that screen work for the first time.
+         */
+        Route::get('/tech_orders', function (Request $request) {
+            $orders = DB::table('items')
+                ->join('orders', 'orders.id', '=', 'items.order_id')
+                ->where('items.category_id', $request->user()->category_id)
+                ->where('orders.status', 'shipped')
+                ->select('orders.id as order_id', 'orders.address', 'orders.status', 'items.quantity as job')
+                ->get();
+
+            return response()->json($orders);
+        });
+
+        /**
+         * Accept a job.
+         *
+         * Previously any signed-in account could accept any order by id. A
+         * technician may now only accept work in their own trade.
+         *
+         * The status written here was 'accept' while the web portal wrote
+         * 'accepted', so an order accepted from the phone never matched the
+         * web dashboard's filters. Both are 'accepted' now.
+         */
+        Route::put('/orders/{id}/status', function (Request $request, $id) {
+            $order = Order::find($id);
+
+            if (! $order) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            $inTrade = DB::table('items')
+                ->where('order_id', $order->id)
+                ->where('category_id', $request->user()->category_id)
+                ->exists();
+
+            if (! $inTrade) {
+                return response()->json(['message' => 'That job is not in your trade.'], 403);
+            }
+
+            $order->status = 'accepted';
+            $order->save();
+
+            return response()->json(['message' => 'Order status updated successfully']);
+        });
     });
 
-    Route::delete('/wishlist_remove/{user_id}/{id}', function ($user_id, $id) {
-        DB::table('wishlists')->where('user_id', $user_id)->where('services_id', $id)->delete();
-        Log::error(response());
-        return response()->json(['success' => true]);
-    });
+    /*
+    |----------------------------------------------------------------------
+    | Administration
+    |----------------------------------------------------------------------
+    |
+    | All of these were reachable by any signed-in resident. /orders alone
+    | returned every order in the system with the customer's name, email,
+    | phone and address.
+    |
+    | The update endpoints took request()->all() straight into update().
+    | Order and Category both declare $guarded = [], so the caller chose the
+    | columns - user_id, total and status included. Each now validates an
+    | explicit list.
+    |
+    */
 
-    Route::put('/orders/{id}', function ($id) {
-        $order = DB::table('orders')->where('id', $id)->first();
+    Route::middleware('api.role:admin')->group(function () {
 
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
-        }
-        $data = request()->all();
-        DB::table('orders')->where('id', $id)->update($data);
-        return response()->json(['message' => 'Order updated successfully']);
-    });
+        Route::get('/orders', fn () => response()->json(
+            DB::table('orders')->orderByDesc('updated_at')->get()
+        ));
 
-    Route::put('/orders/{id}/status', function ($id) {
-        $order = Order::find($id);
+        Route::put('/orders/{id}', function (Request $request, $id) {
+            $order = Order::find($id);
 
-        if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
+            if (! $order) {
+                return response()->json(['error' => 'Order not found'], 404);
+            }
 
-        $order->status = 'accept';
-        $order->save();
+            $order->update($request->validate([
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|max:255',
+                'phone' => 'sometimes|string|max:32',
+                'address' => 'sometimes|string|max:255',
+                'status' => 'sometimes|string|max:32',
+            ]));
 
-        return response()->json(['message' => 'Order status updated successfully']);
-    });
+            return response()->json(['message' => 'Order updated successfully']);
+        });
 
-    Route::get('/orders', function () {
-        $orders = DB::table('orders')
-            ->orderByDesc('updated_at')
-            ->get();
-        return response()->json($orders);
-    });
+        // Kept separate from PUT /orders/{id} because the app calls this one
+        // (Admin_Screens/Orders.js). Same allowlist.
+        Route::put('/order_update/{orderId}', function (Request $request, $orderId) {
+            $order = Order::find($orderId);
 
-    Route::put('/order_update/{orderId}', function ($orderId) {
-        $order = Order::find($orderId);
-        $updatedColumns = request()->all();
-        $order->update($updatedColumns);
-        return response()->json(['message' => 'Order updated successfully.']);
-    });
+            if (! $order) {
+                return response()->json(['error' => 'Order not found'], 404);
+            }
 
-    Route::get('/categories', function () {
-        $categories = DB::table('categories')
-            ->get();
-        return response()->json($categories);
-    });
+            $order->update($request->validate([
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|max:255',
+                'phone' => 'sometimes|string|max:32',
+                'address' => 'sometimes|string|max:255',
+                'status' => 'sometimes|string|max:32',
+            ]));
 
-    Route::put('/category_update/{orderId}', function ($categoryId) {
-        $category = Category::find($categoryId);
-        $updatedColumns = request()->all();
-        $category->update($updatedColumns);
+            return response()->json(['message' => 'Order updated successfully.']);
+        });
 
-        return response()->json(['message' => 'Order updated successfully.']);
-    });
+        Route::post('/category_add', function (Request $request) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:categories,name',
+            ]);
 
-    Route::post('/category_add', function (Request $request) {
-        $category = new Category;
-        $category->name = $request->name;
-        $category->save();
-        return response()->json(['message' => 'Category created successfully']);
+            Category::create(['name' => $validated['name']]);
+
+            return response()->json(['message' => 'Category created successfully']);
+        });
+
+        Route::put('/category_update/{categoryId}', function (Request $request, $categoryId) {
+            $category = Category::find($categoryId);
+
+            if (! $category) {
+                return response()->json(['error' => 'Category not found'], 404);
+            }
+
+            $category->update($request->validate([
+                'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
+            ]));
+
+            return response()->json(['message' => 'Category updated successfully.']);
+        });
     });
 });

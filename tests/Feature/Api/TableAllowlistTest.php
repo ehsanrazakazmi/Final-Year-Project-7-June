@@ -36,6 +36,9 @@ class TableAllowlistTest extends TestCase
     {
         return [
             'users' => ['users'],
+            // Per-user data: returning the whole table handed every user's
+            // wishlist to anyone who asked, so it left the allowlist.
+            'wishlists' => ['wishlists'],
             'password_resets' => ['password_resets'],
             'personal_access_tokens' => ['personal_access_tokens'],
             'sessions' => ['sessions'],
@@ -66,7 +69,6 @@ class TableAllowlistTest extends TestCase
     public static function allowedTableProvider(): array
     {
         return [
-            'wishlists' => ['wishlists'],
             'categories' => ['categories'],
             'availabilities' => ['availabilities'],
             'services' => ['services'],

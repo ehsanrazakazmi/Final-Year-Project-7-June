@@ -32,14 +32,14 @@ class ApiAuthenticationTest extends TestCase
             'read orders' => ['get', '/api/orders'],
             'read home data' => ['get', '/api/home_data'],
             'read a table' => ['get', '/api/tables/categories'],
-            'read someone\'s wishlist' => ['get', '/api/users/1/wishlists'],
-            'read order status' => ['get', '/api/order_status/1'],
+            'read own wishlist' => ['get', '/api/wishlists'],
+            'read order status' => ['get', '/api/order_status'],
             'create a category' => ['post', '/api/category_add'],
             'add to a wishlist' => ['post', '/api/wishlist_add'],
             'place an order' => ['post', '/api/cart_add'],
             'accept an order' => ['put', '/api/orders/1/status'],
             'edit an order' => ['put', '/api/orders/1'],
-            'remove from a wishlist' => ['delete', '/api/wishlist_remove/1/1'],
+            'remove from a wishlist' => ['delete', '/api/wishlist_remove/1'],
         ];
     }
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Availability;
 use App\Models\Services;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 
 class CartController extends Controller
@@ -16,7 +15,6 @@ class CartController extends Controller
         $product = Services::findOrFail($id);
         $availability = Availability::findOrFail($request->availability);
 
-        Log::error('Error saving data to the database' . $product->category_id);
         $item = [
             'product' => $product,
             'quantity' => $request->quantity,
